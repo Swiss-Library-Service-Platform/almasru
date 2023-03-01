@@ -1,0 +1,32 @@
+***************************
+almasru documentation |doc|
+***************************
+
+How to import modules
+---------------------
+
+.. code-block:: python
+
+    # Import libraries
+   from almasru import SruClient, SruRecord, SruRequest, config_log
+   from almasru import check_removable_records
+
+    # Config logs
+    config_log()
+
+Contents
+--------
+
+.. toctree::
+   :maxdepth: 1
+
+   srurequest
+   sruclient
+   srurecord
+   configlog
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+

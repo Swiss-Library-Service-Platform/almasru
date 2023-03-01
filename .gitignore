@@ -1,0 +1,14 @@
+/Lib
+/Scripts
+/.idea
+/log
+/test/log
+/requests
+/test/requests
+/records
+/test/records
+pyvenv.cfg
+*/__pycache__
+*.xlsx
+*.csv
+*.xml
