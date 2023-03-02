@@ -2,6 +2,10 @@
 almasru documentation |doc|
 ***************************
 
+.. image:: https://readthedocs.org/projects/almasru/badge/?version=latest
+    :target: https://almasru.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation Status
+
 How to import modules
 ---------------------
 
