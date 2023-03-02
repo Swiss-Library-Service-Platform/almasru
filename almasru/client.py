@@ -105,6 +105,7 @@ class SruRequest:
                     f.write(content)
             else:
                 self.error_messages.append(f'Error when fetching SRU data, query "{self.query}"')
+                content = r.content
                 logging.error(self.error_messages[-1])
                 is_error = True
 
