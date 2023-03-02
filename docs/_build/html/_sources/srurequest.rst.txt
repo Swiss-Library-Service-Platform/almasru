@@ -1,3 +1,6 @@
-.. autoclass:: almasru.SruRequest
+``SruRequest`` class
+--------------------
+
+.. autoclass:: almasru.client::SruRequest
     :members:
     :inherited-members:

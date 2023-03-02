@@ -9,6 +9,7 @@
 /records
 /test/records
 /almasru.egg-info
+/docs/_build
 pyvenv.cfg
 */__pycache__
 *.xlsx

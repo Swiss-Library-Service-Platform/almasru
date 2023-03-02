@@ -1,6 +1,6 @@
 [project]
 name = "almasru"
-version = "0.2"
+version = "1.0"
 authors = [
   { name="Raphaël Rey", email="raphael.rey@slsp.ch" },
 ]

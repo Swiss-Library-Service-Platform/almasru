@@ -1,2 +1,2 @@
-from .config_log import config_log
+from .configlog import config_log
 from .version import __version__

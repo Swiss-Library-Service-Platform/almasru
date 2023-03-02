@@ -10,10 +10,11 @@
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
-        <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="#" />
     <link rel="search" title="Search" href="search.html" /> 
@@ -24,25 +25,23 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-
-          
-          
-          <a href="index.html" class="icon icon-home">
-            almasru
+            <a href="index.html" class="icon icon-home"> almasru
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
-<li class="toctree-l1"><a class="reference internal" href="srurequest.html"><code class="docutils literal notranslate"><span class="pre">SruRequest</span></code></a></li>
-<li class="toctree-l1"><a class="reference internal" href="sruclient.html"><code class="docutils literal notranslate"><span class="pre">SruClient</span></code></a></li>
-<li class="toctree-l1"><a class="reference internal" href="srurecord.html"><code class="docutils literal notranslate"><span class="pre">SruRecord</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="getstarted.html">Get started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="configlog.html"><code class="docutils literal notranslate"><span class="pre">config_log</span></code> function</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sruclient.html"><code class="docutils literal notranslate"><span class="pre">SruClient</span></code> class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="srurequest.html"><code class="docutils literal notranslate"><span class="pre">SruRequest</span></code> class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="srurecord.html"><code class="docutils literal notranslate"><span class="pre">SruRecord</span></code> class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html"><code class="docutils literal notranslate"><span class="pre">utils</span></code> submodule</a></li>
 </ul>
 
         </div>
@@ -58,8 +57,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Index</li>
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Index</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -72,15 +71,34 @@
 <h1 id="index">Index</h1>
 
 <div class="genindex-jumpbox">
- <a href="#C"><strong>C</strong></a>
+ <a href="#A"><strong>A</strong></a>
+ | <a href="#C"><strong>C</strong></a>
  | <a href="#F"><strong>F</strong></a>
  | <a href="#G"><strong>G</strong></a>
  | <a href="#I"><strong>I</strong></a>
+ | <a href="#M"><strong>M</strong></a>
  | <a href="#S"><strong>S</strong></a>
  
 </div>
+<h2 id="A">A</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    almasru.utils
+
+      <ul>
+        <li><a href="utils.html#module-almasru.utils">module</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="utils.html#almasru.utils.check_removable_records">check_removable_records() (in module almasru.utils)</a>
+</li>
+  </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="configlog.html#almasru.config_log">config_log() (in module almasru)</a>
 </li>
@@ -90,7 +108,7 @@
 <h2 id="F">F</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="sruclient.html#almasru.SruClient.fetch_records">fetch_records() (almasru.SruClient method)</a>
+      <li><a href="sruclient.html#almasru.client.SruClient.fetch_records">fetch_records() (almasru.client.SruClient method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -98,35 +116,35 @@
 <h2 id="G">G</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="srurecord.html#almasru.SruRecord.get_035_fields">get_035_fields() (almasru.SruRecord method)</a>
+      <li><a href="srurecord.html#almasru.client.SruRecord.get_035_fields">get_035_fields() (almasru.client.SruRecord method)</a>
 </li>
-      <li><a href="srurecord.html#almasru.SruRecord.get_bib_level">get_bib_level() (almasru.SruRecord method)</a>
+      <li><a href="srurecord.html#almasru.client.SruRecord.get_bib_level">get_bib_level() (almasru.client.SruRecord method)</a>
 </li>
-      <li><a href="srurecord.html#almasru.SruRecord.get_child_rec">get_child_rec() (almasru.SruRecord method)</a>
+      <li><a href="srurecord.html#almasru.client.SruRecord.get_child_rec">get_child_rec() (almasru.client.SruRecord method)</a>
 </li>
-      <li><a href="srurecord.html#almasru.SruRecord.get_child_rec_std_num">get_child_rec_std_num() (almasru.SruRecord method)</a>
+      <li><a href="srurecord.html#almasru.client.SruRecord.get_child_rec_std_num">get_child_rec_std_num() (almasru.client.SruRecord method)</a>
 </li>
-      <li><a href="srurecord.html#almasru.SruRecord.get_child_rec_sys_num">get_child_rec_sys_num() (almasru.SruRecord method)</a>
+      <li><a href="srurecord.html#almasru.client.SruRecord.get_child_rec_sys_num">get_child_rec_sys_num() (almasru.client.SruRecord method)</a>
 </li>
-      <li><a href="srurecord.html#almasru.SruRecord.get_child_removable_candidate_rec">get_child_removable_candidate_rec() (almasru.SruRecord method)</a>
+      <li><a href="srurecord.html#almasru.client.SruRecord.get_child_removable_candidate_rec">get_child_removable_candidate_rec() (almasru.client.SruRecord method)</a>
 </li>
-      <li><a href="srurecord.html#almasru.SruRecord.get_inventory_info">get_inventory_info() (almasru.SruRecord method)</a>
+      <li><a href="srurecord.html#almasru.client.SruRecord.get_inventory_info">get_inventory_info() (almasru.client.SruRecord method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="srurecord.html#almasru.SruRecord.get_isbn">get_isbn() (almasru.SruRecord method)</a>
+      <li><a href="srurecord.html#almasru.client.SruRecord.get_isbn">get_isbn() (almasru.client.SruRecord method)</a>
 </li>
-      <li><a href="srurecord.html#almasru.SruRecord.get_issn">get_issn() (almasru.SruRecord method)</a>
+      <li><a href="srurecord.html#almasru.client.SruRecord.get_issn">get_issn() (almasru.client.SruRecord method)</a>
 </li>
-      <li><a href="srurecord.html#almasru.SruRecord.get_iz_using_rec">get_iz_using_rec() (almasru.SruRecord method)</a>
+      <li><a href="srurecord.html#almasru.client.SruRecord.get_iz_using_rec">get_iz_using_rec() (almasru.client.SruRecord method)</a>
 </li>
-      <li><a href="srurecord.html#almasru.SruRecord.get_mms_id">get_mms_id() (almasru.SruRecord method)</a>
+      <li><a href="srurecord.html#almasru.client.SruRecord.get_mms_id">get_mms_id() (almasru.client.SruRecord method)</a>
 </li>
-      <li><a href="srurecord.html#almasru.SruRecord.get_parent_rec">get_parent_rec() (almasru.SruRecord method)</a>
+      <li><a href="srurecord.html#almasru.client.SruRecord.get_parent_rec">get_parent_rec() (almasru.client.SruRecord method)</a>
 </li>
-      <li><a href="srurecord.html#almasru.SruRecord.get_parent_removable_candidate_rec">get_parent_removable_candidate_rec() (almasru.SruRecord method)</a>
+      <li><a href="srurecord.html#almasru.client.SruRecord.get_parent_removable_candidate_rec">get_parent_removable_candidate_rec() (almasru.client.SruRecord method)</a>
 </li>
-      <li><a href="srurecord.html#almasru.SruRecord.get_standard_numbers">get_standard_numbers() (almasru.SruRecord method)</a>
+      <li><a href="srurecord.html#almasru.client.SruRecord.get_standard_numbers">get_standard_numbers() (almasru.client.SruRecord method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -134,23 +152,38 @@
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="srurecord.html#almasru.SruRecord.is_removable">is_removable() (almasru.SruRecord method)</a>
+      <li><a href="srurecord.html#almasru.client.SruRecord.is_removable">is_removable() (almasru.client.SruRecord method)</a>
 </li>
+  </ul></td>
+</tr></table>
+
+<h2 id="M">M</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    module
+
+      <ul>
+        <li><a href="utils.html#module-almasru.utils">almasru.utils</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="sruclient.html#almasru.SruClient.set_base_url">set_base_url() (almasru.SruClient class method)</a>
+      <li><a href="srurecord.html#almasru.client.SruRecord.save">save() (almasru.client.SruRecord method)</a>
 </li>
-      <li><a href="sruclient.html#almasru.SruClient">SruClient (class in almasru)</a>
+      <li><a href="sruclient.html#almasru.client.SruClient.set_base_url">set_base_url() (almasru.client.SruClient class method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="srurecord.html#almasru.SruRecord">SruRecord (class in almasru)</a>
+      <li><a href="sruclient.html#almasru.client.SruClient">SruClient (class in almasru.client)</a>
 </li>
-      <li><a href="srurequest.html#almasru.SruRequest">SruRequest (class in almasru)</a>
+      <li><a href="srurecord.html#almasru.client.SruRecord">SruRecord (class in almasru.client)</a>
+</li>
+      <li><a href="srurequest.html#almasru.client.SruRequest">SruRequest (class in almasru.client)</a>
 </li>
   </ul></td>
 </tr></table>

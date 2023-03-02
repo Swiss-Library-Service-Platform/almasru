@@ -1,42 +1,42 @@
-from .almasru import SruRecord
+from .client import SruRecord
 import pandas as pd
 import numpy as np
 from typing import List, Optional
 import logging
 
 
-def check_related_records(mms_ids: List[str], filepath: Optional[str] = None) -> pd.DataFrame:
-    """Check related records for a list of MMS ID
-
-    The function returns the results with a `:class:pandas.DataFrame` with the following columns:
-    - 'mms_id',
-    - 'is_related_record',
-    - 'related_records_mms_id',
-    - 'records_without_linking_field',
-    - 'fields_related_records'
-
-    :param mms_ids: List of MMS ID of records to check through SRU
-    :param filepath: Optional string with a path to an Excel file to save automatically each checked record
-    :return: `:class:pandas.DataFrame` containing the results of the analysis
-    """
-    df = pd.DataFrame(columns=['mms_id',
-                               'is_related_record',
-                               'related_records_mms_id',
-                               'records_without_linking_field',
-                               'fields_related_records'])
-    for mms_id in mms_ids:
-        rec = SruRecord(mms_id)
-        related_records = rec.get_child_rec()
-        df.loc[len(df)] = [related_records['MMS_ID'],
-                           related_records['related_records_found'],
-                           '|'.join(related_records['related_records']),
-                           '|'.join(related_records['records_without_linking_field']),
-                           '|'.join(related_records['fields_related_records'])]
-
-        if filepath is not None:
-            df.to_excel(filepath, index=False)
-
-    return df
+# def check_related_records(mms_ids: List[str], filepath: Optional[str] = None) -> pd.DataFrame:
+#     """Check related records for a list of MMS ID
+#
+#     The function returns the results with a `:class:pandas.DataFrame` with the following columns:
+#     - 'mms_id',
+#     - 'is_related_record',
+#     - 'related_records_mms_id',
+#     - 'records_without_linking_field',
+#     - 'fields_related_records'
+#
+#     :param mms_ids: List of MMS ID of records to check through SRU
+#     :param filepath: Optional string with a path to an Excel file to save automatically each checked record
+#     :return: `:class:pandas.DataFrame` containing the results of the analysis
+#     """
+#     df = pd.DataFrame(columns=['mms_id',
+#                                'is_related_record',
+#                                'related_records_mms_id',
+#                                'records_without_linking_field',
+#                                'fields_related_records'])
+#     for mms_id in mms_ids:
+#         rec = SruRecord(mms_id)
+#         related_records = rec.get_child_rec()
+#         df.loc[len(df)] = [related_records['MMS_ID'],
+#                            related_records['related_records_found'],
+#                            '|'.join(related_records['related_records']),
+#                            '|'.join(related_records['records_without_linking_field']),
+#                            '|'.join(related_records['fields_related_records'])]
+#
+#         if filepath is not None:
+#             df.to_excel(filepath, index=False)
+#
+#     return df
 
 
 def check_removable_records(mms_ids: List[str], filepath: Optional[str] = None) -> pd.DataFrame:
@@ -47,7 +47,8 @@ def check_removable_records(mms_ids: List[str], filepath: Optional[str] = None) 
 
     :param mms_ids: List of MMS ID of records to check through SRU
     :param filepath: Optional string with a path to an Excel file to save automatically each checked record
-    :return: :class:pandas.DataFrame` containing the results of the analysis
+
+    :return: :class:`pandas.DataFrame` containing the results of the analysis
     """
     df = pd.DataFrame(columns=['removable',
                                'comment',
@@ -109,7 +110,6 @@ def check_removable_records(mms_ids: List[str], filepath: Optional[str] = None) 
             children = [child.mms_id for child in rec.get_child_rec()['related_records']]
             parents = [parent.mms_id for parent in rec.get_parent_rec()['related_records']]
 
-        parents = [parent.mms_id for parent in rec.get_parent_rec()['related_records']]
         df.loc[rec.mms_id] = [is_removable[0],
                               is_removable[1],
                               rec.get_bib_level(),
@@ -149,33 +149,33 @@ def check_removable_records(mms_ids: List[str], filepath: Optional[str] = None) 
     return df
 
 
-def get_related_records(mms_id: str, limit: int = 1000):
-    """
-
-    :param mms_id:
-    :type mms_id:
-    :param limit:
-    :type limit:
-    :return:
-    :rtype:
-    """
-    starting_rec = SruRecord(mms_id)
-    records_to_check = []
-    records_checked = set()
-    if starting_rec.error is False:
-        records_to_check.append(starting_rec)
-
-    while len(records_to_check) > 0 and len(records_checked) < limit:
-        record = records_to_check.pop()
-        children = record.get_child_rec()['related_records']
-        records_to_check = set.union(set(records_to_check), (children-records_checked))
-
-        parents = record.get_parent_rec()['related_records']
-        records_to_check = list(set.union(set(records_to_check), (parents - records_checked)))
-
-        records_checked.add(record)
-
-    if len(records_to_check) >= 0:
-        logging.warning(f'{repr(starting_rec)}: limit {limit} of related records reached')
-
-    return records_checked
+# def get_related_records(mms_id: str, limit: int = 1000):
+#     """
+#
+#     :param mms_id:
+#     :type mms_id:
+#     :param limit:
+#     :type limit:
+#     :return:
+#     :rtype:
+#     """
+#     starting_rec = SruRecord(mms_id)
+#     records_to_check = []
+#     records_checked = set()
+#     if starting_rec.error is False:
+#         records_to_check.append(starting_rec)
+#
+#     while len(records_to_check) > 0 and len(records_checked) < limit:
+#         record = records_to_check.pop()
+#         children = record.get_child_rec()['related_records']
+#         records_to_check = set.union(set(records_to_check), (children-records_checked))
+#
+#         parents = record.get_parent_rec()['related_records']
+#         records_to_check = list(set.union(set(records_to_check), (parents - records_checked)))
+#
+#         records_checked.add(record)
+#
+#     if len(records_to_check) >= 0:
+#         logging.warning(f'{repr(starting_rec)}: limit {limit} of related records reached')
+#
+#     return records_checked

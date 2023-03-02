@@ -33,7 +33,7 @@ def check_error(fn: Callable) -> Callable:
 class SruRequest:
     """Class representing SRU request
 
-    This class is used to make SruRequests and to fetch :class:`almasru.SruRecord` results.
+    This class is used to make SruRequests and to fetch :class:`almasru.client.SruRecord` results.
 
     :ivar query: string containing the query for example 'alma.mms_id=991093571899705501'
     :ivar limit: int indicating the max number of returned records. If more records are
@@ -41,7 +41,7 @@ class SruRequest:
     :ivar error: boolean, is True in case of error
     :ivar error_messages: list of string with the error messages
     :ivar are_more_results_available: bool indicating if more records than the limit is available
-    :ivar records: list of :class:`almasru.SruRecord`
+    :ivar records: list of :class:`almasru.client.SruRecord`
 
     :example:
 
@@ -177,7 +177,7 @@ class SruClient:
     :cvar nsmap: dict describing the name spaces used in records
     :cvar parser: `etree.XMLParser` used to parse records
     :cvar records: MMS ID as key and `etree.Element` of the Marc XML of the record as value
-    :cvar requests: dict with query__limit pattern as key and :class:`almasru.SruRequest` as value
+    :cvar requests: dict with query__limit pattern as key and :class:`almasru.client.SruRequest` as value
     :ivar base_url: base url of the SRU server
     """
     nsmap = namespaces = {'srw': 'http://www.loc.gov/zing/srw/',
@@ -220,7 +220,7 @@ class SruClient:
         :param query: string containing the sru query
         :param limit: int indicating the max number of records to fetch, 10 is the default value
 
-        :return: :class:`almasru.SruRequest`
+        :return: :class:`almasru.client.SruRequest`
         """
         if f'{query}__{limit}' not in self.requests:
             req = SruRequest(query, limit)
@@ -390,10 +390,11 @@ class SruRecord:
         to the current record.
 
         :return: dictionary describing the result of analysis. Keys are following:
+
             * 'MMS_ID':  current record ID
             * 'related_records_found':  boolean indicating if related records have been found
             * 'number_of_rel_recs': number of related records found
-            * 'related_records': list of :class:`almasru.SruRecords`
+            * 'related_records': list of :class:`almasru.client.SruRecords`
             * 'fields_related_records': list of fields.
         """
         rel_rec_sys_num = self.get_child_rec_sys_num()
@@ -767,7 +768,7 @@ class SruRecord:
         Fetch records containing specific field with link to the current record. Considered fields
         are '773', '800', '810', '811', '830'.
 
-        :return: list of :class:`almasru.SruRecord`
+        :return: list of :class:`almasru.client.SruRecord`
         """
 
         # Check if the record has children with inventory. The child must have be linked with a 8xx field
@@ -785,7 +786,7 @@ class SruRecord:
 
         Check 773 of the current record and look for potential parent records.
 
-        :return: list of :class:`almasru.SruRecord`
+        :return: list of :class:`almasru.client.SruRecord`
         """
         # Get the parent records. Only parent that are target of 773 field prevent deletion of the child
         # if the parent has inventory
