@@ -8,8 +8,9 @@ How to import modules
 .. code-block:: python
 
     # Import libraries
-   from almasru.client import SruClient, SruRecord, SruRequest, config_log
-   from almasru.utils import check_removable_records
+    from almasru.client import SruClient, SruRecord, SruRequest
+    from almasru.utils import check_removable_records
+    from almasru import config_log
 
     # Config logs
     config_log()
