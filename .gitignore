@@ -1,5 +1,6 @@
 /Lib
 /Scripts
+/dist
 /.idea
 /log
 /test/log
@@ -7,6 +8,7 @@
 /test/requests
 /records
 /test/records
+/almasru.egg-info
 pyvenv.cfg
 */__pycache__
 *.xlsx

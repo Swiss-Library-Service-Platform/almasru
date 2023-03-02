@@ -1,4 +1,5 @@
-from almasru import SruClient, SruRecord, config_log, SruRequest
+from almasru.client import SruClient, SruRecord, SruRequest
+from almasru import config_log
 import unittest
 import shutil
 
