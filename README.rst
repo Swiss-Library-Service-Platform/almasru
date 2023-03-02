@@ -12,5 +12,5 @@ backup of the records.
 * `Documentation <https://almapi-wrapper.readthedocs.io/en/latest/>`_
 
 .. |doc| image:: https://readthedocs.org/projects/almapi-wrapper/badge/?version=latest
-    :target: https://almapi-wrapper.readthedocs.io/en/latest/?badge=latest
+    :target: https://almasru.readthedocs.io/en/latest/
     :alt: Documentation Status
