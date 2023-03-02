@@ -9,7 +9,7 @@ backup of the records.
 * Year: 2023
 * Version: 0.1
 * License: GNU General Public License v3.0
-* `Documentation <https://almapi-wrapper.readthedocs.io/en/latest/>`_
+* `Documentation <https://almasru.readthedocs.io/en/latest/>`_
 
 .. |doc| image:: https://readthedocs.org/projects/almapi-wrapper/badge/?version=latest
     :target: https://almasru.readthedocs.io/en/latest/
