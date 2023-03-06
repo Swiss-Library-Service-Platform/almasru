@@ -587,7 +587,7 @@ class SruRecord:
             return self._parent_rec
 
         # List of datafields to check
-        fields_to_test = ['773', '774', '776', '777', '780', '785', '786', '800', '810', '811', '830']
+        fields_to_test = ['773', '774', '776', '777', '780', '785', '786', '787', '800', '810', '811', '830']
 
         fields_related_records = []
         records = set()
