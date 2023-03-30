@@ -557,6 +557,11 @@ class SruRecord:
                     for field in temp_fields:
                         code = field.attrib['code']
                         tag = field.getparent().attrib['tag']
+                        if tag in ['020', '022']:
+                            self.warning = True
+                            self.warning_messages.append(f'More than one record with same {tag}, {self.mms_id} '
+                                                         f'and {record.mms_id} are probably duplicated records')
+
                         fields_related_records.append({'child_MMS_ID': record.mms_id,
                                                        'field': f'{tag}${code}',
                                                        'content': field.text})
