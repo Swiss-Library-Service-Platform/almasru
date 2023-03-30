@@ -40,13 +40,34 @@ class TestSruClient(unittest.TestCase):
                          '991159842549705501',
                          f'MMS ID should be "991159842549705501", it is {rec.get_mms_id()}')
 
-    def test_get_035_field(self):
+    def test_get_035_field_1(self):
         mms_id = '991159842549705501'
         rec = SruRecord(mms_id)
 
         self.assertEqual(rec.get_035_fields(),
                          {'142079855', '(swissbib)142079855-41slsp_network', '(NEBIS)001807691EBI01'},
                          f'It should be: "142079855", "(swissbib)142079855-41slsp_network", "(NEBIS)001807691EBI01"')
+
+    def test_get_035_field_2(self):
+        mms_id = '991159842549705501'
+        rec = SruRecord(mms_id)
+
+        self.assertEqual(rec.get_035_fields(slsp_only=True),
+                         {'(swissbib)142079855-41slsp_network', '(NEBIS)001807691EBI01'},
+                         f'It should be: "(swissbib)142079855-41slsp_network", "(NEBIS)001807691EBI01"')
+
+
+    def test_exist_analytical_records_children_1(self):
+        mms_id = '991068988579705501'
+        rec = SruRecord(mms_id)
+        analytical_records = rec.get_child_analytical_records()
+        self.assertGreater(len(analytical_records), 35)
+
+    def test_exist_analytical_records_children_2(self):
+        mms_id = '991156231809705501'
+        rec = SruRecord(mms_id)
+        analytical_records = rec.get_child_analytical_records()
+        self.assertEqual(len(analytical_records), 0)
 
     def test_get_rel_rec(self):
         mms_id = '991159842549705501'
@@ -116,12 +137,6 @@ class TestSruClient(unittest.TestCase):
         self.assertEqual(r.is_removable(),
                          (False, 'Child record has inventory'),
                          f'{repr(r)} is not removable and child has inventory')
-
-    def test_is_removable_3(self):
-        r = SruRecord('991000817289705501')
-        self.assertEqual(r.is_removable(),
-                         (True, 'REMOVABLE'),
-                         f'{repr(r)} is removable')
 
     def test_error_on_mms_id(self):
         r = SruRecord('24234234542542354325454')

@@ -311,11 +311,12 @@ class SruRecord:
             return None
 
     @check_error
-    def get_035_fields(self, var: bool = False) -> Set[str]:
-        """get_035_fields(self, var: bool = False) -> Set[str]
+    def get_035_fields(self, var: bool = False, slsp_only: bool = False) -> Set[str]:
+        """get_035_fields(self, var: bool = False, slsp_only: bool = False) -> Set[str]
         Return a set of system numbers of 035 fields
 
         :param var: Parameters: flag indicating if truncated system numbers should be tested
+        :param slsp_only: Parameters: flag indicating if only slsp system numbers should be returned
 
         :return: Set of strings with the system IDs of 035 fields
         """
@@ -333,6 +334,11 @@ class SruRecord:
 
             other_sys_ids.update(var_sys_id)
 
+        if slsp_only is True:
+            # return only SLSP related system ids
+            prefixes = '|'.join(['RERO', 'IDSBB', 'IDSLU', 'IDSSG', 'NEBIS', 'SBT', 'ALEX', 'ABN', 'swissbib'])
+            other_sys_ids = {sys_num for sys_num in other_sys_ids
+                             if re.match(r'^\((?:{})\).+'.format(prefixes), sys_num)}
         return other_sys_ids
 
     @check_error
@@ -424,7 +430,8 @@ class SruRecord:
             return self._child_rec_num_sys
 
         # Fetch the system numbers, all 035 + 001 should be tested
-        sys_numbers_to_test = self.get_035_fields()
+        sys_numbers_to_test = self.get_035_fields(slsp_only=True)
+
         sys_numbers_to_test.add(self.mms_id)
 
         fields_related_records = []
@@ -719,14 +726,30 @@ class SruRecord:
         return list_izs
 
     @check_error
+    def get_child_analytical_records(self) -> List['SruRecord']:
+        """get_child_analytical_records(self) -> List['SruRecord']
+        Get the list of analytical records. Check only existing 773 fields and not leader.
+
+        :return: list of :class:`almasru.client.SruRecord`
+        """
+        children_analysis = self.get_child_rec_sys_num()
+        analytical_children = []
+        for link in children_analysis['fields_related_records']:
+            if link['field'] == '773$w':
+                analytical_children.append(SruRecord(link['child_MMS_ID']))
+
+        return analytical_children
+
+    @check_error
     def is_removable(self) -> Tuple[bool, str]:
         """is_removable(self) -> Tuple[bool, str]
         Check if a record is safe to be removed
 
         The method checks related records and inventory in other IZ.
         1. Test if the record has 852 fields. It would indicate existing holding in any IZ
-        2. Test if the record is target of 8xx or 773 fields of other records
-        3. Test if the record has a 773 field targeting a record with inventory
+        2. Test if record has analytical records children (children linked with 773 field)
+        3. Test if the record is target of 8xx or 773 fields of other records
+        4. Test if the record has a 773 field targeting a record with inventory
 
         :return: tuple containing bool indicating if the record can be safely removed and a message.
         """
@@ -735,6 +758,13 @@ class SruRecord:
         if len(list_izs) > 0:
             logging.warning(f'{repr(self)} cannot be deleted: record used in other IZs: {", ".join(list_izs)}')
             return False, 'Record used in other IZ'
+
+        # No deletion if records has analytical records among children
+        analytical_children = self.get_child_analytical_records()
+        if len(analytical_children) > 0:
+            logging.warning(f'{repr(self)} cannot be deleted: record has at least one child '
+                            f'analytical record: {repr(analytical_children[0])}')
+            return False, 'Has analytical record as child'
 
         # Check if the record has children with inventory. The child must have be linked with a 8xx field
         # or 773. Normally analytical records linked with 773 should not have holdings anyway.
@@ -778,6 +808,7 @@ class SruRecord:
         children_mms_id = set([field['child_MMS_ID'] for field in children['fields_related_records']
                               if field['field'][:3] in ['773', '800', '810', '811', '830']])
 
+        # NOTE: le 773 empêche la suppression: code à corriger
         return [SruRecord(mms_id) for mms_id in children_mms_id]
 
     @check_error

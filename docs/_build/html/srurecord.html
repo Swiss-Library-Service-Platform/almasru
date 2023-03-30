@@ -92,11 +92,14 @@ will fetch the record through SRU query.</p>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="almasru.client.SruRecord.get_035_fields">
-<span class="sig-name descname"><span class="pre">get_035_fields</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#almasru.client.SruRecord.get_035_fields" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_035_fields</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slsp_only</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#almasru.client.SruRecord.get_035_fields" title="Permalink to this definition"></a></dt>
 <dd><p>Return a set of system numbers of 035 fields</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>var</strong> – Parameters: flag indicating if truncated system numbers should be tested</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>var</strong> – Parameters: flag indicating if truncated system numbers should be tested</p></li>
+<li><p><strong>slsp_only</strong> – Parameters: flag indicating if only slsp system numbers should be returned</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>Set of strings with the system IDs of 035 fields</p>
@@ -112,6 +115,17 @@ will fetch the record through SRU query.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>str with the bib level</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="almasru.client.SruRecord.get_child_analytical_records">
+<span class="sig-name descname"><span class="pre">get_child_analytical_records</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'SruRecord'</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#almasru.client.SruRecord.get_child_analytical_records" title="Permalink to this definition"></a></dt>
+<dd><p>Get the list of analytical records. Check only existing 773 fields and not leader.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>list of <a class="reference internal" href="#almasru.client.SruRecord" title="almasru.client.SruRecord"><code class="xref py py-class docutils literal notranslate"><span class="pre">almasru.client.SruRecord</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -276,8 +290,9 @@ in subfields “x” or “z” and system numbers in “w” subfield.</p>
 <dd><p>Check if a record is safe to be removed</p>
 <p>The method checks related records and inventory in other IZ.
 1. Test if the record has 852 fields. It would indicate existing holding in any IZ
-2. Test if the record is target of 8xx or 773 fields of other records
-3. Test if the record has a 773 field targeting a record with inventory</p>
+2. Test if record has analytical records children (children linked with 773 field)
+3. Test if the record is target of 8xx or 773 fields of other records
+4. Test if the record has a 773 field targeting a record with inventory</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>tuple containing bool indicating if the record can be safely removed and a message.</p>
