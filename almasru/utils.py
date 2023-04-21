@@ -67,8 +67,10 @@ def check_removable_records(mms_ids: List[str], filepath: Optional[str] = None) 
     # Fetch all records to analyse
     records = [SruRecord(mms_id) for mms_id in mms_ids]
 
+    removable_rec_mms_ids = []
+
     while len(records) > 0:
-        rec = records.pop()
+        rec = records.pop(0)
         logging.info(f'Processed: {len(processed_records)} / remaining: {len(records)} / current: {repr(rec)}')
 
         # Avoid to analyse the same record twice
@@ -76,7 +78,7 @@ def check_removable_records(mms_ids: List[str], filepath: Optional[str] = None) 
             continue
 
         # Check if the record is removable
-        is_removable = rec.is_removable()
+        is_removable = rec.is_removable(removable_rec_mms_ids)
 
         # Add the record to the list of processed records to avoid twice analyses
         processed_records.add(rec)
@@ -119,6 +121,9 @@ def check_removable_records(mms_ids: List[str], filepath: Optional[str] = None) 
                               np.nan,
                               np.nan if rec.warning is False else rec.warning_messages[-1],
                               rec.error]
+
+        # Get list of mms_id to ignore when checking for existing child analytical records
+        removable_rec_mms_ids = df.loc[df.removable].index.values
 
     df['additional_mms_id'] = ~df.index.isin(mms_ids)
 

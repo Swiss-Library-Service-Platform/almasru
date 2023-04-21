@@ -463,8 +463,8 @@ class SruRecord:
             if len(temp_records) == 0:
                 continue
 
-            # Use sets to avoid duplicated records
-            records.update(temp_records)
+            # Use to ignore records linked with 035 that are not real children
+            temp_records_duplicates = set()
 
             for record in temp_records:
                 temp_fields = record.data.xpath(f'./m:datafield/m:subfield[contains(text(), "{sys_num}")]',
@@ -476,18 +476,21 @@ class SruRecord:
                         tag = field.getparent().attrib['tag']
 
                         if tag == '035':
+                            temp_records_duplicates.add(record)
                             self.warning = True
                             self.warning_messages.append(f'More than one record with same 035, {self.mms_id} '
                                                          f'and {record.mms_id} are probably duplicated records')
-
-                        fields_related_records.append({'child_MMS_ID': record.mms_id,
-                                                       'field': f'{tag}${code}',
-                                                       'content': field.text})
+                        else:
+                            fields_related_records.append({'child_MMS_ID': record.mms_id,
+                                                           'field': f'{tag}${code}',
+                                                           'content': field.text})
                 else:
                     logging.warning(f'{repr(self)} record {repr(record)} found with SRU but no linking field')
                     fields_related_records.append({'child_MMS_ID': record.mms_id,
                                                    'field': f'UNKNOWN',
                                                    'content': sys_num})
+            # Use sets to avoid duplicated records
+            records.update(set(temp_records) - temp_records_duplicates)
 
         if len(records) == 0:
             related_record_found = False
@@ -546,8 +549,8 @@ class SruRecord:
             if len(temp_records) == 0:
                 continue
 
-            # Use sets to avoid duplicated records
-            records.update(temp_records)
+            # Use to ignore records linked with 020 or 022 that are not real children
+            temp_records_duplicates = set()
 
             for record in temp_records:
                 temp_fields = record.data.xpath(f'./m:datafield/m:subfield[contains(text(), "{std_num}")]',
@@ -561,15 +564,17 @@ class SruRecord:
                             self.warning = True
                             self.warning_messages.append(f'More than one record with same {tag}, {self.mms_id} '
                                                          f'and {record.mms_id} are probably duplicated records')
-
-                        fields_related_records.append({'child_MMS_ID': record.mms_id,
-                                                       'field': f'{tag}${code}',
-                                                       'content': field.text})
+                        else:
+                            fields_related_records.append({'child_MMS_ID': record.mms_id,
+                                                           'field': f'{tag}${code}',
+                                                           'content': field.text})
                 else:
                     logging.warning(f'{repr(self)} record {repr(record)} found with SRU but no linking field')
                     fields_related_records.append({'child_MMS_ID': record.mms_id,
                                                    'field': f'UNKNOWN',
                                                    'content': std_num})
+            # Use sets to avoid duplicated records
+            records.update(set(temp_records) - temp_records_duplicates)
 
         if len(records) == 0:
             related_record_found = False
@@ -746,8 +751,8 @@ class SruRecord:
         return analytical_children
 
     @check_error
-    def is_removable(self) -> Tuple[bool, str]:
-        """is_removable(self) -> Tuple[bool, str]
+    def is_removable(self, removable_rec_mms_id: Optional[List[str]] = None) -> Tuple[bool, str]:
+        """is_removable(self, removable_rec_mms_id: Optional[List[str]] = None) -> Tuple[bool, str]
         Check if a record is safe to be removed
 
         The method checks related records and inventory in other IZ.
@@ -758,6 +763,10 @@ class SruRecord:
 
         :return: tuple containing bool indicating if the record can be safely removed and a message.
         """
+        # Set default value for removable_rec_mms_id
+        if removable_rec_mms_id is None:
+            removable_rec_mms_id = []
+
         # Check if record used by other IZ and has holdings
         list_izs = self.get_iz_using_rec()
         if len(list_izs) > 0:
@@ -765,7 +774,10 @@ class SruRecord:
             return False, 'Record used in other IZ'
 
         # No deletion if records has analytical records among children
-        analytical_children = self.get_child_analytical_records()
+        # Filter the list with the list of removable records.
+        analytical_children = [rec for rec in self.get_child_analytical_records()
+                               if rec.mms_id not in removable_rec_mms_id]
+
         if len(analytical_children) > 0:
             logging.warning(f'{repr(self)} cannot be deleted: record has at least one child '
                             f'analytical record: {repr(analytical_children[0])}')
