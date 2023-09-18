@@ -274,6 +274,22 @@ in subfields “x” or “z” and system numbers in “w” subfield.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="almasru.client.SruRecord.get_reasons_preventing_deletion">
+<span class="sig-name descname"><span class="pre">get_reasons_preventing_deletion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#almasru.client.SruRecord.get_reasons_preventing_deletion" title="Permalink to this definition"></a></dt>
+<dd><p>analyse(self, removable_rec_mms_id: Optional[List[str]] = None) =&gt; List[str]
+Analyse the record to find reasons preventing deletion</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>removable_rec_mms_id</strong> – list of MMS_ID of records that are safe to be removed. This is used to avoid
+records of the list currently being processed to be considered as preventing deletion.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of string with the reasons preventing deletion</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="almasru.client.SruRecord.get_standard_numbers">
 <span class="sig-name descname"><span class="pre">get_standard_numbers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#almasru.client.SruRecord.get_standard_numbers" title="Permalink to this definition"></a></dt>
 <dd><p>Fetch all ISSN and ISBN of the records</p>
@@ -288,6 +304,12 @@ in subfields “x” or “z” and system numbers in “w” subfield.</p>
 <dt class="sig sig-object py" id="almasru.client.SruRecord.is_removable">
 <span class="sig-name descname"><span class="pre">is_removable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">removable_rec_mms_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#almasru.client.SruRecord.is_removable" title="Permalink to this definition"></a></dt>
 <dd><p>Check if a record is safe to be removed</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>removable_rec_mms_id</strong> – list of MMS_ID of records that are safe to be removed. This is used to avoid
+records of the list currently being processed to be considered as preventing deletion.</p>
+</dd>
+</dl>
 <p>The method checks related records and inventory in other IZ.
 1. Test if the record has 852 fields. It would indicate existing holding in any IZ
 2. Test if record has analytical records children (children linked with 773 field)
