@@ -751,9 +751,67 @@ class SruRecord:
         return analytical_children
 
     @check_error
+    def get_reasons_preventing_deletion(self, removable_rec_mms_id: Optional[List[str]] = None) -> List[str]:
+        """analyse(self, removable_rec_mms_id: Optional[List[str]] = None) => List[str]
+        Analyse the record to find reasons preventing deletion
+
+        :param removable_rec_mms_id: list of MMS_ID of records that are safe to be removed. This is used to avoid
+            records of the list currently being processed to be considered as preventing deletion.
+
+        :return: list of string with the reasons preventing deletion
+        """
+        # Set default value for removable_rec_mms_id
+        if removable_rec_mms_id is None:
+            removable_rec_mms_id = []
+        messages = []
+
+        # Check if record used by other IZ and has holdings
+        list_izs = self.get_iz_using_rec()
+        if len(list_izs) > 0:
+            logging.info(f'{repr(self)} used in IZs: {", ".join(list_izs)}')
+            messages.append(f'Used in IZs: {", ".join(list_izs)}')
+
+        # Filter the list with the list of removable records.
+        analytical_children = [rec for rec in self.get_child_analytical_records()
+                               if rec.mms_id not in removable_rec_mms_id]
+
+        if len(analytical_children) > 0:
+            logging.info(f'{repr(self)} has at least one child '
+                         f'analytical record: {repr(analytical_children[0])}')
+            messages.append(f'Has child analytical records: {"|".join([rec.mms_id for rec in analytical_children])}')
+
+        # Check if the record has children with inventory. The child must have be linked with a 8xx field
+        # or 773. Normally analytical records linked with 773 should not have holdings anyway.
+        children = self.get_child_removable_candidate_rec()
+        for rec in children:
+            used_by_iz = rec.get_iz_using_rec()
+
+            if len(used_by_iz) > 0:
+                logging.info(f'{repr(self)} has at least a child record with '
+                             f'inventory: {repr(rec)} in '
+                             f'{", ".join(used_by_iz)}')
+                messages.append(f'Has child preventing deletion record with inventory: {rec.mms_id}')
+
+        # Get the parent records. Only parent that are target of 773 field prevent deletion of the child
+        # if the parent has inventory
+        parents = self.get_parent_removable_candidate_rec()
+        for rec in parents:
+            used_by_iz = rec.get_iz_using_rec()
+            if len(used_by_iz) > 0:
+                logging.info(f'{repr(self)} has at least a parent record with '
+                             f'inventory: {repr(rec)} in '
+                             f'{", ".join(used_by_iz)}')
+                messages.append(f'Has parent record preventing deletion with inventory: {rec.mms_id}')
+
+        return messages
+
+    @check_error
     def is_removable(self, removable_rec_mms_id: Optional[List[str]] = None) -> Tuple[bool, str]:
         """is_removable(self, removable_rec_mms_id: Optional[List[str]] = None) -> Tuple[bool, str]
         Check if a record is safe to be removed
+
+        :param removable_rec_mms_id: list of MMS_ID of records that are safe to be removed. This is used to avoid
+            records of the list currently being processed to be considered as preventing deletion.
 
         The method checks related records and inventory in other IZ.
         1. Test if the record has 852 fields. It would indicate existing holding in any IZ
@@ -770,8 +828,8 @@ class SruRecord:
         # Check if record used by other IZ and has holdings
         list_izs = self.get_iz_using_rec()
         if len(list_izs) > 0:
-            logging.warning(f'{repr(self)} cannot be deleted: record used in other IZs: {", ".join(list_izs)}')
-            return False, 'Record used in other IZ'
+            logging.warning(f'{repr(self)} cannot be deleted: record used in IZs: {", ".join(list_izs)}')
+            return False, 'Record used in at least one IZ'
 
         # No deletion if records has analytical records among children
         # Filter the list with the list of removable records.

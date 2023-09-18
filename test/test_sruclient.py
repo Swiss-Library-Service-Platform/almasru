@@ -150,3 +150,10 @@ class TestSruClient(unittest.TestCase):
             xml = f.read()
 
         self.assertTrue('991133645239705501' in xml)
+
+    def test_get_reasons_preventing_deletion(self):
+        msg = SruRecord('991133645269705501').get_reasons_preventing_deletion()
+        self.assertEqual(len(msg), 1, 'Should be one message')
+        self.assertEqual(msg[0],
+                         'Has parent record preventing deletion with inventory: 991015678889705501',
+                         'Message should be "Has parent record preventing deletion with inventory: 991015678889705501"')

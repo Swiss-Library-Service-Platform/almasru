@@ -5,38 +5,70 @@ from typing import List, Optional
 import logging
 
 
-# def check_related_records(mms_ids: List[str], filepath: Optional[str] = None) -> pd.DataFrame:
-#     """Check related records for a list of MMS ID
-#
-#     The function returns the results with a `:class:pandas.DataFrame` with the following columns:
-#     - 'mms_id',
-#     - 'is_related_record',
-#     - 'related_records_mms_id',
-#     - 'records_without_linking_field',
-#     - 'fields_related_records'
-#
-#     :param mms_ids: List of MMS ID of records to check through SRU
-#     :param filepath: Optional string with a path to an Excel file to save automatically each checked record
-#     :return: `:class:pandas.DataFrame` containing the results of the analysis
-#     """
-#     df = pd.DataFrame(columns=['mms_id',
-#                                'is_related_record',
-#                                'related_records_mms_id',
-#                                'records_without_linking_field',
-#                                'fields_related_records'])
-#     for mms_id in mms_ids:
-#         rec = SruRecord(mms_id)
-#         related_records = rec.get_child_rec()
-#         df.loc[len(df)] = [related_records['MMS_ID'],
-#                            related_records['related_records_found'],
-#                            '|'.join(related_records['related_records']),
-#                            '|'.join(related_records['records_without_linking_field']),
-#                            '|'.join(related_records['fields_related_records'])]
-#
-#         if filepath is not None:
-#             df.to_excel(filepath, index=False)
-#
-#     return df
+def analyse_records(mms_ids: List[str], filepath: Optional[str] = None) -> pd.DataFrame:
+    """
+    Use a list of MMS ID to analyse the records and return a :class:`pandas.DataFrame` with the results.
+
+    Main difference with :func:`check_removable_records` is that this function will check all parameters.
+
+    :param mms_ids: list of MMS ID to analyse
+    :param filepath: Optional string with a path to an Excel file to save automatically each checked record
+    :return: :class:`pandas.DataFrame` containing the results of the analysis
+    """
+    df = pd.DataFrame(columns=['removable',
+                               'bib_level',
+                               'error',
+                               'IZ_with_inventory',
+                               'child_records',
+                               'parent_records',
+                               'messages'])
+    df.index.name = 'mms_id'
+
+    # This set contains all processed records, useful to avoid to process twice the same record
+    processed_records = set()
+
+    # Fetch all records to analyse
+    records = [SruRecord(mms_id) for mms_id in mms_ids]
+
+    while len(records) > 0:
+        rec = records.pop(0)
+        logging.info(f'Processed: {len(processed_records)} / remaining: {len(records)} / current: {repr(rec)}')
+
+        # Avoid to analyse the same record twice
+        if rec in processed_records:
+            continue
+        messages = rec.get_reasons_preventing_deletion()
+
+        # Add the record to the list of processed records to avoid twice analyses
+        processed_records.add(rec)
+
+        # Record encountered an error
+        if rec.error is True:
+            df.loc[rec.mms_id] = [False,
+                                  np.nan,
+                                  rec.error,
+                                  np.nan,
+                                  np.nan,
+                                  np.nan,
+                                  np.nan]
+            continue
+
+        # Fetch parent and child records
+        children = [child.mms_id for child in rec.get_child_rec()['related_records']]
+        parents = [parent.mms_id for parent in rec.get_parent_rec()['related_records']]
+
+        df.loc[rec.mms_id] = [len(messages) == 0,
+                              rec.get_bib_level(),
+                              rec.error,
+                              '|'.join(rec.get_iz_using_rec()),
+                              '|'.join(children),
+                              '|'.join(parents),
+                              '|'.join(messages)]
+
+    if filepath is not None:
+        df.to_excel(filepath)
+
+    return df
 
 
 def check_removable_records(mms_ids: List[str], filepath: Optional[str] = None) -> pd.DataFrame:
@@ -152,35 +184,3 @@ def check_removable_records(mms_ids: List[str], filepath: Optional[str] = None) 
         df.to_excel(filepath)
 
     return df
-
-
-# def get_related_records(mms_id: str, limit: int = 1000):
-#     """
-#
-#     :param mms_id:
-#     :type mms_id:
-#     :param limit:
-#     :type limit:
-#     :return:
-#     :rtype:
-#     """
-#     starting_rec = SruRecord(mms_id)
-#     records_to_check = []
-#     records_checked = set()
-#     if starting_rec.error is False:
-#         records_to_check.append(starting_rec)
-#
-#     while len(records_to_check) > 0 and len(records_checked) < limit:
-#         record = records_to_check.pop()
-#         children = record.get_child_rec()['related_records']
-#         records_to_check = set.union(set(records_to_check), (children-records_checked))
-#
-#         parents = record.get_parent_rec()['related_records']
-#         records_to_check = list(set.union(set(records_to_check), (parents - records_checked)))
-#
-#         records_checked.add(record)
-#
-#     if len(records_to_check) >= 0:
-#         logging.warning(f'{repr(starting_rec)}: limit {limit} of related records reached')
-#
-#     return records_checked
