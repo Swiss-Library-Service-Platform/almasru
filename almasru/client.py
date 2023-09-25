@@ -42,6 +42,7 @@ class SruRequest:
     :ivar error_messages: list of string with the error messages
     :ivar are_more_results_available: bool indicating if more records than the limit is available
     :ivar records: list of :class:`almasru.client.SruRecord`
+    :ivar base_url: base url of the SRU server
 
     :example:
 
@@ -49,13 +50,14 @@ class SruRequest:
 
     """
 
-    def __init__(self, query: str, limit: int = 10) -> None:
+    def __init__(self, query: str, limit: int = 10, client: 'SruClient' = None) -> None:
         self.query = query
         self.limit = limit
         self.error = False
         self.error_messages = []
         self.are_more_results_available = False
         self.records = []
+        self.base_url = client.base_url if client is not None else SruClient.base_url
         self._fetch_records()
 
     def __hash__(self) -> int:
@@ -96,7 +98,7 @@ class SruRequest:
                 content = f.read()
         else:
             params = self._build_sru_params(self.query, start_record, maximum_records)
-            r = requests.get(SruClient.base_url, params=params)
+            r = requests.get(self.base_url, params=params)
             if r.ok is True:
                 logging.info(f'SRU data fetched: {r.url}')
                 content = r.content
@@ -116,6 +118,8 @@ class SruRequest:
                                        f'when fetching SRU data, query "{self.query}"')
             logging.error(self.error_messages[-1])
             is_error = True
+
+            xml = etree.fromstring(content, parser=SruClient.parser)
 
         return xml, is_error
 
@@ -224,7 +228,7 @@ class SruClient:
         :return: :class:`almasru.client.SruRequest`
         """
         if f'{query}__{limit}' not in self.requests:
-            req = SruRequest(query, limit)
+            req = SruRequest(query, limit, self)
             self.requests[f'{query}__{limit}'] = req
 
         return self.requests[f'{query}__{limit}']

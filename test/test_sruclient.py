@@ -157,3 +157,13 @@ class TestSruClient(unittest.TestCase):
         self.assertEqual(msg[0],
                          'Has parent record preventing deletion with inventory: 991015678889705501',
                          'Message should be "Has parent record preventing deletion with inventory: 991015678889705501"')
+
+
+    def test_client_other_client(self):
+
+        client = SruClient(base_url='https://swisscovery.slsp.ch/view/sru/41SLSP_ABN')
+        req = client.fetch_records('alma.isbn=389721511X')
+
+        self.assertFalse(req.error, 'not able to fetch SRU data')
+
+        self.assertEqual(len(req.records), 2, f'should be one record found, found: {len(req.records)}')
