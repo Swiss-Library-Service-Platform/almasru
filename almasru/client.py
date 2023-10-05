@@ -1,34 +1,12 @@
 from lxml import etree
 import logging
 import requests
-from typing import Dict, List, Tuple, Optional, Callable, Set, AnyStr, Literal
+from typing import Dict, List, Tuple, Optional, AnyStr, Literal, Set
 import os
 import re
 import hashlib
-
-
-def check_error(fn: Callable) -> Callable:
-    """Prevents operation if the record is containing an error
-
-    :param fn: Method that should not to be executed in case of error
-
-    :return: Wrapper function of the decorator
-    """
-
-    def wrapper(*args, **kwargs):
-        """Wrapper function
-        """
-        rec = args[0]
-        if rec.error is False and rec.data is not None:
-            rec = fn(*args, **kwargs)
-        else:
-            logging.error(f'{repr(rec)}: due to error to the record, process "{fn.__name__}" skipped.')
-        return rec
-
-    wrapper.__doc__ = fn.__doc__
-
-    return wrapper
-
+from .common import check_error
+import shutil
 
 class SruRequest:
     """Class representing SRU request
@@ -208,6 +186,12 @@ class SruClient:
         # Create the requests folder if it doesn't exist
         if os.path.isdir('./requests') is False:
             os.mkdir('./requests')
+
+    @staticmethod
+    def clean_old_requests():
+        if os.path.isdir('./requests') is True:
+            shutil.rmtree('./requests')
+        os.mkdir('./requests')
 
     @classmethod
     def set_base_url(cls, base_url: str) -> None:

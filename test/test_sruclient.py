@@ -56,7 +56,6 @@ class TestSruClient(unittest.TestCase):
                          {'(swissbib)142079855-41slsp_network', '(NEBIS)001807691EBI01'},
                          f'It should be: "(swissbib)142079855-41slsp_network", "(NEBIS)001807691EBI01"')
 
-
     def test_exist_analytical_records_children_1(self):
         mms_id = '991068988579705501'
         rec = SruRecord(mms_id)
@@ -75,7 +74,7 @@ class TestSruClient(unittest.TestCase):
         analysis = rec.get_child_rec()
         self.assertEqual(analysis['related_records_found'], True, 'Related records for "991159842549705501"'
                                                                   ' should have been found')
-        self.assertEqual(analysis['number_of_rel_recs'], 7, 'It should be 6 related records for "991159842549705501"')
+        self.assertEqual(analysis['number_of_rel_recs'], 8, 'It should be 8 related records for "991159842549705501"')
         self.assertTrue(SruRecord('991171058106405501') in analysis['related_records'],
                         'Record "991171058106405501" should be in related records set')
         self.assertTrue({'child_MMS_ID': '991171058106405501',
@@ -158,7 +157,6 @@ class TestSruClient(unittest.TestCase):
                          'Has parent record preventing deletion with inventory: 991015678889705501',
                          'Message should be "Has parent record preventing deletion with inventory: 991015678889705501"')
 
-
     def test_client_other_client(self):
 
         client = SruClient(base_url='https://swisscovery.slsp.ch/view/sru/41SLSP_ABN')
@@ -166,4 +164,4 @@ class TestSruClient(unittest.TestCase):
 
         self.assertFalse(req.error, 'not able to fetch SRU data')
 
-        self.assertEqual(len(req.records), 2, f'should be one record found, found: {len(req.records)}')
+        self.assertEqual(len(req.records), 1, f'should be one record found, found: {len(req.records)}')
