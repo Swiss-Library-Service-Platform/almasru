@@ -8,6 +8,7 @@ import hashlib
 from .common import check_error
 import shutil
 
+
 class SruRequest:
     """Class representing SRU request
 
@@ -187,11 +188,15 @@ class SruClient:
         if os.path.isdir('./requests') is False:
             os.mkdir('./requests')
 
-    @staticmethod
-    def clean_old_requests():
+    @classmethod
+    def clean_old_requests(cls) -> None:
+        """Delete and recreate the requests folder and reset the requests and records attributes"""
         if os.path.isdir('./requests') is True:
             shutil.rmtree('./requests')
         os.mkdir('./requests')
+
+        cls.requests = dict()
+        cls.records = dict()
 
     @classmethod
     def set_base_url(cls, base_url: str) -> None:
