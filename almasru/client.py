@@ -1,4 +1,4 @@
-from lxml import etree
+
 import logging
 import requests
 from typing import Dict, List, Tuple, Optional, AnyStr, Literal, Set
@@ -7,6 +7,7 @@ import re
 import hashlib
 from .common import check_error
 import shutil
+from lxml import etree
 
 
 class SruRequest:

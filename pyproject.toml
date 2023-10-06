@@ -6,11 +6,21 @@ authors = [
 ]
 description = "This python module is a tool to use Alma SRU. it manages the logs and the backup of the records."
 readme = "readme.rst"
-requires-python = ">=3.9"
+requires-python = ">=3"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
 ]
+
+dependencies = ["requests",
+                "lxml",
+                "openpyxl",
+                "numpy",
+                "pandas",
+                "Levenshtein"]
+
+[tool.setuptools.packages.find]
+include = ["almasru", "almasru.*"]
 
 [project.urls]
 "Homepage" = "https://github.com/Swiss-Library-Service-Platform/almasru"
