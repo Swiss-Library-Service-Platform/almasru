@@ -11,6 +11,67 @@ from .common import check_error
 from .client import SruRecord
 
 
+class BriefRec:
+    """Class representing a brief record object
+
+    You can create a brief record object from a :class:`SruRecord` object or
+    from the XML data of a MARCXML record using an Etree Element object.
+
+    The namespaces are removed from the XML data.
+
+    :ivar error: boolean, is True in case of error
+    :ivar error_messages: list of string with the error messages
+    :ivar data: json object with brief record information
+    :ivar src_data: XML data of the record
+    :ivar record: :class:`SruRecord` object if available
+    """
+    def __init__(self, rec: Union[etree.Element, 'SruRecord']) -> None:
+        """Brief record object
+
+        :param rec: XML data of the record or :class:`SruRecord` object
+        """
+        self.error = False
+        self.error_messages = []
+        self.data = None
+        self.record = None
+        if type(rec) is SruRecord:
+            self.record = rec
+            self.src_data = remove_ns(self.record.data)
+            self.data = self.data = self._get_bib_info()
+        elif type(rec) is etree._Element:
+            self.src_data = remove_ns(rec)
+            self.data = self._get_bib_info()
+        else:
+            self.error = True
+            self.error.append(f'Wrong type of data provided: {type(rec)}')
+            logging.error(f'BriefRec: wrong type of data provided: {type(rec)}')
+
+    def __str__(self) -> str:
+        if self.data is not None:
+            return json.dumps(self.data, indent=4)
+        else:
+            return ''
+
+    def __repr__(self) -> str:
+        if self.record is not None:
+            return f"{self.__class__.__name__}({repr(self.record)})"
+        elif self.data is not None:
+            return f"{self.__class__.__name__}(<'{self.data['rec_id']}'>)"
+        else:
+            return f"{self.__class__.__name__}(<No ID available>)"
+
+    def __hash__(self) -> int:
+        return hash(self.data['rec_id'])
+
+    def __eq__(self, other) -> bool:
+        return self.data['recid'] == other.data['recid']
+
+    # @check_error
+    def _get_bib_info(self):
+        bib_info = BriefRecFactory.get_bib_info(self.src_data)
+        return bib_info
+
+
 class BriefRecFactory:
     """Class to create a brief record from a MARCXML record
 
@@ -20,7 +81,8 @@ class BriefRecFactory:
 
     @staticmethod
     def normalize_title(title: str) -> str:
-        """Normalize title string
+        """normalize_title(title: str) -> str
+        Normalize title string
 
         Idea is to remove "<<" and ">>" of the title and remove
         all non-alphanumeric characters.
@@ -36,7 +98,8 @@ class BriefRecFactory:
 
     @staticmethod
     def get_rec_id(bib: etree.Element) -> Optional[str]:
-        """get_rec_id(bib) -> Optional[str]
+        """get_rec_id(bib: etree.Element) -> Optional[str]
+        get_rec_id(bib) -> Optional[str]
         Get the record ID
 
         :param bib: :class:`etree.Element`
@@ -335,52 +398,4 @@ class BriefRecFactory:
                     'isbns': BriefRecFactory.get_isbns(bib),
                     'issns': BriefRecFactory.get_issns(bib),
                     'sysnums': BriefRecFactory.get_sysnums(bib)}
-        return bib_info
-
-
-class BriefRec:
-    """Class representing a brief record object
-    """
-    def __init__(self, rec: Union[etree.Element, 'SruRecord']) -> None:
-        """Brief record object
-
-        :param rec: XML data of the record or :class:`SruRecord` object
-        """
-        self.error = False
-        self.data = None
-        self.record = None
-        if type(rec) is SruRecord:
-            self.record = rec
-            self.src_data = remove_ns(self.record.data)
-            self.data = self.data = self._get_bib_info()
-        elif type(rec) is etree._Element:
-            self.src_data = remove_ns(rec)
-            self.data = self._get_bib_info()
-        else:
-            self.error = True
-            logging.error(f'BriefRec: wrong type of data: {type(rec)}')
-
-    def __str__(self) -> str:
-        if self.data is not None:
-            return json.dumps(self.data, indent=4)
-        else:
-            return ''
-
-    def __repr__(self) -> str:
-        if self.record is not None:
-            return f"{self.__class__.__name__}({repr(self.record)})"
-        elif self.data is not None:
-            return f"{self.__class__.__name__}(<'{self.data['rec_id']}'>)"
-        else:
-            return f"{self.__class__.__name__}(<No ID available>)"
-
-    def __hash__(self) -> int:
-        return hash(self.data['rec_id'])
-
-    def __eq__(self, other) -> bool:
-        return self.data['recid'] == other.data['recid']
-
-    # @check_error
-    def _get_bib_info(self):
-        bib_info = BriefRecFactory.get_bib_info(self.src_data)
         return bib_info

@@ -45,6 +45,9 @@
 <li class="toctree-l1"><a class="reference internal" href="sruclient.html"><code class="docutils literal notranslate"><span class="pre">SruClient</span></code> class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="srurequest.html"><code class="docutils literal notranslate"><span class="pre">SruRequest</span></code> class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="srurecord.html"><code class="docutils literal notranslate"><span class="pre">SruRecord</span></code> class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="briefrec.html"><code class="docutils literal notranslate"><span class="pre">BriefRec</span></code> class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="briefrec.html#briefrecfactory-class"><code class="docutils literal notranslate"><span class="pre">BriefRecFactory</span></code> class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dedup.html"><code class="docutils literal notranslate"><span class="pre">dedup</span></code> submodule</a></li>
 <li class="toctree-l1"><a class="reference internal" href="utils.html"><code class="docutils literal notranslate"><span class="pre">utils</span></code> submodule</a></li>
 </ul>
 
@@ -76,11 +79,15 @@
 
 <div class="genindex-jumpbox">
  <a href="#A"><strong>A</strong></a>
+ | <a href="#B"><strong>B</strong></a>
  | <a href="#C"><strong>C</strong></a>
+ | <a href="#E"><strong>E</strong></a>
  | <a href="#F"><strong>F</strong></a>
  | <a href="#G"><strong>G</strong></a>
+ | <a href="#H"><strong>H</strong></a>
  | <a href="#I"><strong>I</strong></a>
  | <a href="#M"><strong>M</strong></a>
+ | <a href="#N"><strong>N</strong></a>
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
  
@@ -89,15 +96,34 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li>
+    almasru.dedup
+
+      <ul>
+        <li><a href="dedup.html#module-almasru.dedup">module</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
     almasru.utils
 
       <ul>
         <li><a href="utils.html#module-almasru.utils">module</a>
 </li>
       </ul></li>
+      <li><a href="utils.html#almasru.utils.analyse_records">analyse_records() (in module almasru.utils)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="B">B</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="briefrec.html#almasru.briefrecord.BriefRec">BriefRec (class in almasru.briefrecord)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="utils.html#almasru.utils.analyse_records">analyse_records() (in module almasru.utils)</a>
+      <li><a href="briefrec.html#almasru.briefrecord.BriefRecFactory">BriefRecFactory (class in almasru.briefrecord)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -116,6 +142,34 @@
   </ul></td>
 </tr></table>
 
+<h2 id="E">E</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="dedup.html#almasru.dedup.evaluate_completeness">evaluate_completeness() (in module almasru.dedup)</a>
+</li>
+      <li><a href="dedup.html#almasru.dedup.evaluate_extent">evaluate_extent() (in module almasru.dedup)</a>
+</li>
+      <li><a href="dedup.html#almasru.dedup.evaluate_format">evaluate_format() (in module almasru.dedup)</a>
+</li>
+      <li><a href="dedup.html#almasru.dedup.evaluate_identifiers">evaluate_identifiers() (in module almasru.dedup)</a>
+</li>
+      <li><a href="dedup.html#almasru.dedup.evaluate_lists_names">evaluate_lists_names() (in module almasru.dedup)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="dedup.html#almasru.dedup.evaluate_lists_texts">evaluate_lists_texts() (in module almasru.dedup)</a>
+</li>
+      <li><a href="dedup.html#almasru.dedup.evaluate_names">evaluate_names() (in module almasru.dedup)</a>
+</li>
+      <li><a href="dedup.html#almasru.dedup.evaluate_similarity">evaluate_similarity() (in module almasru.dedup)</a>
+</li>
+      <li><a href="dedup.html#almasru.dedup.evaluate_texts">evaluate_texts() (in module almasru.dedup)</a>
+</li>
+      <li><a href="dedup.html#almasru.dedup.evaluate_year">evaluate_year() (in module almasru.dedup)</a>
+</li>
+  </ul></td>
+</tr></table>
+
 <h2 id="F">F</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -129,6 +183,12 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="srurecord.html#almasru.client.SruRecord.get_035_fields">get_035_fields() (almasru.client.SruRecord method)</a>
 </li>
+      <li><a href="dedup.html#almasru.dedup.get_ascii">get_ascii() (in module almasru.dedup)</a>
+</li>
+      <li><a href="briefrec.html#almasru.briefrecord.BriefRecFactory.get_authors">get_authors() (almasru.briefrecord.BriefRecFactory static method)</a>
+</li>
+      <li><a href="briefrec.html#almasru.briefrecord.BriefRecFactory.get_bib_info">get_bib_info() (almasru.briefrecord.BriefRecFactory static method)</a>
+</li>
       <li><a href="srurecord.html#almasru.client.SruRecord.get_bib_level">get_bib_level() (almasru.client.SruRecord method)</a>
 </li>
       <li><a href="srurecord.html#almasru.client.SruRecord.get_child_analytical_records">get_child_analytical_records() (almasru.client.SruRecord method)</a>
@@ -141,15 +201,31 @@
 </li>
       <li><a href="srurecord.html#almasru.client.SruRecord.get_child_removable_candidate_rec">get_child_removable_candidate_rec() (almasru.client.SruRecord method)</a>
 </li>
+      <li><a href="briefrec.html#almasru.briefrecord.BriefRecFactory.get_date_1">get_date_1() (almasru.briefrecord.BriefRecFactory static method)</a>
+</li>
+      <li><a href="briefrec.html#almasru.briefrecord.BriefRecFactory.get_date_2">get_date_2() (almasru.briefrecord.BriefRecFactory static method)</a>
+</li>
+      <li><a href="briefrec.html#almasru.briefrecord.BriefRecFactory.get_editions">get_editions() (almasru.briefrecord.BriefRecFactory static method)</a>
+</li>
+      <li><a href="briefrec.html#almasru.briefrecord.BriefRecFactory.get_extent">get_extent() (almasru.briefrecord.BriefRecFactory static method)</a>
+</li>
+      <li><a href="briefrec.html#almasru.briefrecord.BriefRecFactory.get_format">get_format() (almasru.briefrecord.BriefRecFactory static method)</a>
+</li>
       <li><a href="srurecord.html#almasru.client.SruRecord.get_inventory_info">get_inventory_info() (almasru.client.SruRecord method)</a>
+</li>
+      <li><a href="srurecord.html#almasru.client.SruRecord.get_isbn">get_isbn() (almasru.client.SruRecord method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="srurecord.html#almasru.client.SruRecord.get_isbn">get_isbn() (almasru.client.SruRecord method)</a>
+      <li><a href="briefrec.html#almasru.briefrecord.BriefRecFactory.get_isbns">get_isbns() (almasru.briefrecord.BriefRecFactory static method)</a>
 </li>
       <li><a href="srurecord.html#almasru.client.SruRecord.get_issn">get_issn() (almasru.client.SruRecord method)</a>
 </li>
+      <li><a href="briefrec.html#almasru.briefrecord.BriefRecFactory.get_issns">get_issns() (almasru.briefrecord.BriefRecFactory static method)</a>
+</li>
       <li><a href="srurecord.html#almasru.client.SruRecord.get_iz_using_rec">get_iz_using_rec() (almasru.client.SruRecord method)</a>
+</li>
+      <li><a href="briefrec.html#almasru.briefrecord.BriefRecFactory.get_leader_pos67">get_leader_pos67() (almasru.briefrecord.BriefRecFactory static method)</a>
 </li>
       <li><a href="srurecord.html#almasru.client.SruRecord.get_mms_id">get_mms_id() (almasru.client.SruRecord method)</a>
 </li>
@@ -157,9 +233,33 @@
 </li>
       <li><a href="srurecord.html#almasru.client.SruRecord.get_parent_removable_candidate_rec">get_parent_removable_candidate_rec() (almasru.client.SruRecord method)</a>
 </li>
+      <li><a href="briefrec.html#almasru.briefrecord.BriefRecFactory.get_part_title">get_part_title() (almasru.briefrecord.BriefRecFactory static method)</a>
+</li>
+      <li><a href="briefrec.html#almasru.briefrecord.BriefRecFactory.get_publishers">get_publishers() (almasru.briefrecord.BriefRecFactory static method)</a>
+</li>
       <li><a href="srurecord.html#almasru.client.SruRecord.get_reasons_preventing_deletion">get_reasons_preventing_deletion() (almasru.client.SruRecord method)</a>
 </li>
+      <li><a href="briefrec.html#almasru.briefrecord.BriefRecFactory.get_rec_id">get_rec_id() (almasru.briefrecord.BriefRecFactory static method)</a>
+</li>
+      <li><a href="briefrec.html#almasru.briefrecord.BriefRecFactory.get_series">get_series() (almasru.briefrecord.BriefRecFactory static method)</a>
+</li>
       <li><a href="srurecord.html#almasru.client.SruRecord.get_standard_numbers">get_standard_numbers() (almasru.client.SruRecord method)</a>
+</li>
+      <li><a href="briefrec.html#almasru.briefrecord.BriefRecFactory.get_subtitle">get_subtitle() (almasru.briefrecord.BriefRecFactory static method)</a>
+</li>
+      <li><a href="briefrec.html#almasru.briefrecord.BriefRecFactory.get_sysnums">get_sysnums() (almasru.briefrecord.BriefRecFactory static method)</a>
+</li>
+      <li><a href="briefrec.html#almasru.briefrecord.BriefRecFactory.get_title">get_title() (almasru.briefrecord.BriefRecFactory static method)</a>
+</li>
+      <li><a href="dedup.html#almasru.dedup.get_unique_combinations">get_unique_combinations() (in module almasru.dedup)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="H">H</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="dedup.html#almasru.dedup.handling_missing_values">handling_missing_values() (in module almasru.dedup)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -179,9 +279,19 @@
     module
 
       <ul>
+        <li><a href="dedup.html#module-almasru.dedup">almasru.dedup</a>
+</li>
         <li><a href="utils.html#module-almasru.utils">almasru.utils</a>
 </li>
       </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="N">N</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="briefrec.html#almasru.briefrecord.BriefRecFactory.normalize_title">normalize_title() (almasru.briefrecord.BriefRecFactory static method)</a>
+</li>
   </ul></td>
 </tr></table>
 

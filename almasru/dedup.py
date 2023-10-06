@@ -6,10 +6,11 @@ from Levenshtein import distance
 import itertools
 from lxml import etree
 
-from typing import Callable
+from typing import Callable, List, Tuple, Dict, Any
 
 
 def handling_missing_values(fn: Callable) -> Callable:
+    """Decorator to handle missing values."""
     def wrapper(val1, val2):
 
         if val1 is None or val2 is None:
@@ -20,31 +21,45 @@ def handling_missing_values(fn: Callable) -> Callable:
 
         return fn(val1, val2)
 
+    wrapper.__doc__ = fn.__doc__
+
     return wrapper
 
 
-def get_ascii(txt):
+def get_ascii(txt: str) -> str:
+    """get_ascii(txt: str) -> str
+
+    Return the ascii version of a string."""
     return unicodedata.normalize('NFD', txt).encode('ascii', 'ignore').decode().upper()
 
 
 @handling_missing_values
-def evaluate_year(year1, year2):
+def evaluate_year(year1: int, year2: int) -> float:
+    """evaluate_year(year1: int, year2: int) -> float
+
+    Return the result of the evaluation of similarity of two years."""
     return 1 / ((abs(year1 - year2) * .5) ** 2 + 1)
 
 
 @handling_missing_values
-def evaluate_identifiers(ids1, ids2):
+def evaluate_identifiers(ids1: str, ids2: str) -> float:
+    """evaluate_identifiers(ids1: str, ids2: str) -> float
+
+    Return the result of the evaluation of similarity of two lists of identifiers."""
     ids1 = set(ids1)
     ids2 = set(ids2)
     if len(set.union(ids1, ids2)) > 0:
         score = len(set.intersection(ids1, ids2)) / len(set.union(ids1, ids2))
         return score ** .05 if score > 0 else 0
     else:
-        np.nan
+        return np.nan
 
 
 @handling_missing_values
-def evaluate_extent(extent1, extent2):
+def evaluate_extent(extent1: List[int], extent2: List[int]) -> float:
+    """evaluate_extent(extent1: List[int], extent2: List[int]) -> float
+
+    Return the result of the evaluation of similarity of two extents."""
     extent1 = set(extent1)
     extent2 = set(extent2)
     score1 = len(set.intersection(extent1, extent2)) / len(set.union(extent1, extent2))
@@ -67,23 +82,29 @@ def evaluate_extent(extent1, extent2):
     return (score1 + score2) / 2
 
 
-def get_unique_combinations(l1, l2):
+def get_unique_combinations(l1: List[str], l2: List[str]) -> List[List[Tuple]]:
+    """get_unique_combinations(l1: List[str], l2: List[str]) -> List[List[Tuple]]
+
+    Used to search the best match with names like authors or publishers."""
     if len(l1) < len(l2):
         l2, l1 = (l1, l2)
 
     unique_combinations = []
-    permut = itertools.permutations(l1, len(l2))
+    permutations = itertools.permutations(l1, len(l2))
 
     # zip() is called to pair each permutation
     # and shorter list element into combination
-    for comb in permut:
-        zipped = zip(comb, l2)
+    for permutation in permutations:
+        zipped = zip(permutation, l2)
         unique_combinations.append(list(zipped))
     return unique_combinations
 
 
 @handling_missing_values
-def evaluate_lists_texts(texts1, texts2):
+def evaluate_lists_texts(texts1: List[str], texts2: List[str]) -> float:
+    """evaluate_lists_texts(texts1: List[str], texts2: List[str]) -> float
+
+    Return the result of the best pairing texts."""
     if len(texts1) < len(texts2):
         texts2, texts1 = (texts1, texts2)
     unique_combinations = get_unique_combinations(texts1, texts2)
@@ -92,8 +113,10 @@ def evaluate_lists_texts(texts1, texts2):
 
 
 @handling_missing_values
-def evaluate_lists_names(names1, names2):
-    """Return the result of the best pairing authors.
+def evaluate_lists_names(names1: List[str], names2: List[str]) -> float:
+    """evaluate_lists_names(names1: List[str], names2: List[str]) -> float
+
+    Return the result of the best pairing authors.
 
     The function test all possible pairings and return the max value.
     """
@@ -106,7 +129,10 @@ def evaluate_lists_names(names1, names2):
 
 
 @handling_missing_values
-def evaluate_names(name1, name2):
+def evaluate_names(name1: str, name2: str) -> float:
+    """evaluate_names(name1: str, name2: str) -> float
+
+    Return the result of the evaluation of similarity of two names."""
     names1 = [get_ascii(re.sub(r'\W', '', n).lower()) for n in name1.split()]
     names2 = [get_ascii(re.sub(r'\W', '', n).lower()) for n in name2.split()]
 
@@ -146,7 +172,10 @@ def evaluate_names(name1, name2):
 
 
 @handling_missing_values
-def evaluate_texts(text1, text2):
+def evaluate_texts(text1: str, text2: str) -> float:
+    """evaluate_texts(text1: str, text2: str) -> float
+
+    Return the result of the evaluation of similarity of two texts."""
     if len(text1) < len(text2):
         text1, text2 = (text2, text1)
     coef = len(text1) - len(text2) + 1
@@ -164,20 +193,29 @@ def evaluate_texts(text1, text2):
 
 
 @handling_missing_values
-def evaluate_format(format1, format2):
-    return int(format1 == format2)
+def evaluate_format(format1: str, format2: str) -> float:
+    """evaluate_format(format1: str, format2: str) -> float
+
+    Return the result of the evaluation of similarity of two formats"""
+    return float(format1 == format2)
 
 
 @handling_missing_values
-def evaluate_completeness(b1, b2):
+def evaluate_completeness(bib1: Dict[str, Any], bib2: Dict[str, Any]) -> float:
+    """evaluate_completeness(bib1: Dict[str, Any], bib2: Dict[str, Any]) -> float
+
+    Return the result of the evaluation of similarity of two bib records in number
+    of available fields."""
     nb_common_existing_fields = 0
-    for k in b1:
-        if (b1[k] is None) == (b2[k] is None):
+    for k in bib1:
+        if (bib1[k] is None) == (bib2[k] is None):
             nb_common_existing_fields += 1
-    return 1 / (1 + (len(b1) - nb_common_existing_fields))
+    return 1 / (1 + (len(bib1) - nb_common_existing_fields))
 
 
-def evaluate_similarity(bib1, bib2):
+def evaluate_similarity(bib1: Dict[str, Any], bib2: Dict[str, Any]) -> Dict[str, float]:
+    """evaluate_similarity(bib1: Dict[str, Any], bib2: Dict[str, Any]) -> Dict[str, float]
+    Return the result of the evaluation of similarity of two bib records."""
     results = {
         'format': evaluate_format(bib1['format'], bib2['format']),
         'title': evaluate_texts(bib1['title'], bib2['title']),

@@ -2,7 +2,7 @@
 almasru documentation |doc|
 ***************************
 
-.. image:: https://readthedocs.org/projects/almasru/badge/?version=latest
+.. |doc| image:: https://readthedocs.org/projects/almasru/badge/?version=latest
     :target: https://almasru.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
@@ -30,6 +30,8 @@ Contents
    sruclient
    srurequest
    srurecord
+   briefrec
+   dedup
    utils
 
 Indices and tables
