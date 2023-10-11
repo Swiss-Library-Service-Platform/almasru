@@ -165,3 +165,7 @@ class TestSruClient(unittest.TestCase):
         self.assertFalse(req.error, 'not able to fetch SRU data')
 
         self.assertEqual(len(req.records), 1, f'should be one record found, found: {len(req.records)}')
+
+
+if __name__ == '__main__':
+    unittest.main()

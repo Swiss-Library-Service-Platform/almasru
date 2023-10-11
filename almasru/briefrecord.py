@@ -97,6 +97,20 @@ class BriefRecFactory:
         return title
 
     @staticmethod
+    def normalize_extent(extent: str) -> List[int]:
+        """normalize_extent(extent: str) -> List[int]
+        Normalize extent string into list of ints
+
+        :param extent: extent to normalize
+
+        :return: list of ints
+        """
+        extent_lower = extent.lower()
+        extent_list = [int(f) for f in re.findall(r'\d+', extent_lower)]
+        extent_list += [roman_to_int(f) for f in re.findall(r'\b[ivxlcdm]+\b', extent_lower)]
+        return extent_list
+
+    @staticmethod
     def get_rec_id(bib: etree.Element) -> Optional[str]:
         """get_rec_id(bib: etree.Element) -> Optional[str]
         get_rec_id(bib) -> Optional[str]
@@ -156,6 +170,23 @@ class BriefRecFactory:
         if len(issns) == 0:
             return None
         return list(issns)
+
+    @staticmethod
+    def get_other_std_num(bib: etree.Element) -> Optional[List[str]]:
+        """get_other_std_num(bib: etree.Element) -> Optional[List[str]]
+        Get a list of standardized numbers like DOI
+
+        :param bib: :class:`etree.Element`
+
+        :return: set of standardized numbers
+        """
+        fields = bib.findall('.//datafield[@tag="024"]/subfield[@code="a"]')
+        raw_std_nums = set([field.text for field in fields])
+        std_nums = set()
+
+        if len(raw_std_nums) == 0:
+            return None
+        return list(raw_std_nums)
 
     @staticmethod
     def get_leader_pos67(bib: etree.Element) -> Optional[str]:
@@ -272,8 +303,8 @@ class BriefRecFactory:
             return int(m.group())
 
     @staticmethod
-    def get_format(bib: etree.Element) -> Optional[Literal['book', 'analytical', 'serie']]:
-        """get_format(bib: etree.Element) -> Optional[Literal['book', 'analytical', 'serie']]
+    def get_format(bib: etree.Element) -> Optional[Literal['book', 'analytical', 'series', 'map', 'projected']]:
+        """get_format(bib: etree.Element) -> Optional[Literal['book', 'analytical', 'series']]
         Get the format of the record from leader field position 6 and 7
 
         :param bib: :class:`etree.Element`
@@ -285,28 +316,50 @@ class BriefRecFactory:
         elif BriefRecFactory.get_leader_pos67(bib) == 'aa':
             return 'analytical'
         elif BriefRecFactory.get_leader_pos67(bib) == 'as':
-            return 'serie'
+            return 'series'
+        elif BriefRecFactory.get_leader_pos67(bib) == 'em':
+            return 'map'
+        elif BriefRecFactory.get_leader_pos67(bib) == 'gm':
+            return 'projected'
         else:
             logging.error(f'Unknown format: {BriefRecFactory.get_leader_pos67(bib)}')
             return None
 
     @staticmethod
-    def get_authors(bib: etree.Element) -> Optional[List[str]]:
+    def get_creators(bib: etree.Element) -> Optional[List[str]]:
         """get_authors(bib: etree.Element) -> Option.al[List[str]]
-        Get the list of authors from 100$a and 700$a
+        Get the list of authors from 100$a, 110$a, 111$a, 700$a, 710$a and 711$a
 
         :param bib: :class:`etree.Element`
 
         :return: list of authors and None if not found
         """
-        field100 = bib.find('.//datafield[@tag="100"]/subfield[@code="a"]')
-        fields700 = [f.text for f in bib.findall('.//datafield[@tag="700"]/subfield[@code="a"]')]
-        if field100 is not None:
-            return [field100.text] + fields700
-        elif len(fields700) > 0:
-            return fields700
-        else:
+        fields = []
+        for tag in ['100', '110', '111', '700', '710', '711']:
+            fields += bib.findall(f'.//datafield[@tag="{tag}"]/subfield[@code="a"]')
+        fields = [f.text for f in fields]
+        if len(fields) == 0:
             return None
+        else:
+            return fields
+
+    @staticmethod
+    def get_corp_creators(bib: etree.Element) -> Optional[List[str]]:
+        """get_authors(bib: etree.Element) -> Option.al[List[str]]
+        Get the list of authors from 110$a, 111$a, 710$a and 711$a
+
+        :param bib: :class:`etree.Element`
+
+        :return: list of authors and None if not found
+        """
+        fields = []
+        for tag in ['110', '111', '710', '711']:
+            fields += bib.findall(f'.//datafield[@tag="{tag}"]/subfield[@code="a"]')
+        fields = [f.text for f in fields]
+        if len(fields) == 0:
+            return None
+        else:
+            return fields
 
     @staticmethod
     def get_extent(bib: etree.Element):
@@ -319,8 +372,7 @@ class BriefRecFactory:
         extent_field = bib.find('.//datafield[@tag="300"]/subfield[@code="a"]')
         extent = None
         if extent_field is not None:
-            extent = [int(f) for f in re.findall(r'\d+', extent_field.text)]
-            extent += [roman_to_int(f) for f in re.findall(r'\b[ivxlcdm]+\b', extent_field.text)]
+            extent = BriefRecFactory.normalize_extent(extent_field.text)
 
         return extent
 
@@ -389,7 +441,8 @@ class BriefRecFactory:
                     'title': BriefRecFactory.get_complete_title(bib),
                     'short_title': BriefRecFactory.get_title(bib),
                     'editions': BriefRecFactory.get_editions(bib),
-                    'authors': BriefRecFactory.get_authors(bib),
+                    'creators': BriefRecFactory.get_creators(bib),
+                    'corp_creators': BriefRecFactory.get_corp_creators(bib),
                     'date_1': BriefRecFactory.get_date_1(bib),
                     'date_2': BriefRecFactory.get_date_2(bib),
                     'publishers': BriefRecFactory.get_publishers(bib),
@@ -397,5 +450,6 @@ class BriefRecFactory:
                     'extent': BriefRecFactory.get_extent(bib),
                     'isbns': BriefRecFactory.get_isbns(bib),
                     'issns': BriefRecFactory.get_issns(bib),
+                    'other_std_num': BriefRecFactory.get_other_std_num(bib),
                     'sysnums': BriefRecFactory.get_sysnums(bib)}
         return bib_info

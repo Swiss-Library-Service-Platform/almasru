@@ -14,6 +14,8 @@ How to import modules
     # Import libraries
     from almasru.client import SruClient, SruRecord, SruRequest
     from almasru.utils import check_removable_records, analyse_records
+    from almasru import dedup
+    from almasru.briefrecord import BriefRecFactory, BriefRec
     from almasru import config_log
 
     # Config logs

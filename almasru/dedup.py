@@ -215,13 +215,20 @@ def evaluate_completeness(bib1: Dict[str, Any], bib2: Dict[str, Any]) -> float:
 
 def evaluate_similarity(bib1: Dict[str, Any], bib2: Dict[str, Any]) -> Dict[str, float]:
     """evaluate_similarity(bib1: Dict[str, Any], bib2: Dict[str, Any]) -> Dict[str, float]
+    The function returns a dictionary with keys corresponding to the fields of the bib
+    records and values corresponding to the similarity score of the fields.
+
+    :param bib1: Dict[str, Any] containing the data of a bib record
+    :param bib2: Dict[str, Any] containing the data of a bib record
+
     Return the result of the evaluation of similarity of two bib records."""
     results = {
         'format': evaluate_format(bib1['format'], bib2['format']),
         'title': evaluate_texts(bib1['title'], bib2['title']),
         'short_title': evaluate_texts(bib1['short_title'], bib2['short_title']),
         'editions': evaluate_lists_texts(bib1['editions'], bib2['editions']),
-        'authors': evaluate_lists_names(bib1['authors'], bib2['authors']),
+        'creators': evaluate_lists_names(bib1['creators'], bib2['creators']),
+        'corp_creators': evaluate_lists_names(bib1['corp_creators'], bib2['corp_creators']),
         'date_1': evaluate_year(bib1['date_1'], bib2['date_1']),
         'date_2': evaluate_year(bib1['date_2'], bib2['date_2']),
         'publishers': evaluate_lists_texts(bib1['publishers'], bib2['publishers']),
@@ -229,7 +236,19 @@ def evaluate_similarity(bib1: Dict[str, Any], bib2: Dict[str, Any]) -> Dict[str,
         'extent': evaluate_extent(bib1['extent'], bib2['extent']),
         'isbns': evaluate_identifiers(bib1['isbns'], bib2['isbns']),
         'issns': evaluate_identifiers(bib1['issns'], bib2['issns']),
+        'other_std_num': evaluate_identifiers(bib1['other_std_num'], bib2['other_std_num']),
         'sysnums': evaluate_identifiers(bib1['sysnums'], bib2['sysnums']),
         'same_fields_existing': evaluate_completeness(bib1, bib2)
     }
     return results
+
+
+def get_similarity_score(bib1: Dict[str, Any], bib2: Dict[str, Any]) -> float:
+    """get_similarity_score(bib1: Dict[str, Any], bib2: Dict[str, Any]) -> float
+
+    :param bib1: Dict[str, Any] containing the data of a bib record
+    :param bib2: Dict[str, Any] containing the data of a bib record
+
+    :return: similarity score between two bib records as float"""
+    results = evaluate_similarity(bib1, bib2)
+    return np.mean([results[k] for k in results if pd.isna(results[k]) is False])

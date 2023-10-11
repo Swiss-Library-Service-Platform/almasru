@@ -17,5 +17,9 @@ class TestSruClient(unittest.TestCase):
         self.assertEqual(brief_rec.data['rec_id'], '991068988579705501',
                          f'No brief record created for {mms_id}')
 
-        self.assertEqual(len(brief_rec.data), 14,
+        self.assertEqual(len(brief_rec.data), 16,
                          f'Not all keys of data are present in brief record for {mms_id}')
+
+
+if __name__ == '__main__':
+    unittest.main()
