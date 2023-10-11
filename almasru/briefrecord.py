@@ -328,14 +328,14 @@ class BriefRecFactory:
     @staticmethod
     def get_creators(bib: etree.Element) -> Optional[List[str]]:
         """get_authors(bib: etree.Element) -> Option.al[List[str]]
-        Get the list of authors from 100$a, 110$a, 111$a, 700$a, 710$a and 711$a
+        Get the list of authors from 100$a, 700$a
 
         :param bib: :class:`etree.Element`
 
         :return: list of authors and None if not found
         """
         fields = []
-        for tag in ['100', '110', '111', '700', '710', '711']:
+        for tag in ['100', '700']:
             fields += bib.findall(f'.//datafield[@tag="{tag}"]/subfield[@code="a"]')
         fields = [f.text for f in fields]
         if len(fields) == 0:
