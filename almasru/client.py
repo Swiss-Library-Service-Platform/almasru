@@ -330,7 +330,7 @@ class SruRecord:
 
         if slsp_only is True:
             # return only SLSP related system ids
-            prefixes = '|'.join(['RERO', 'IDSBB', 'IDSLU', 'IDSSG', 'NEBIS', 'SBT', 'ALEX', 'ABN', 'swissbib'])
+            prefixes = '|'.join(['RERO', 'IDSBB', 'IDSLU', 'IDSSG', 'NEBIS', 'SBT', 'ALEX', 'ABN', 'swissbib', 'HAN'])
             other_sys_ids = {sys_num for sys_num in other_sys_ids
                              if re.match(r'^\((?:{})\).+'.format(prefixes), sys_num)}
         return other_sys_ids
