@@ -64,7 +64,7 @@ class BriefRec:
         return hash(self.data['rec_id'])
 
     def __eq__(self, other) -> bool:
-        return self.data['recid'] == other.data['recid']
+        return self.data['rec_id'] == other.data['rec_id']
 
     # @check_error
     def _get_bib_info(self):
