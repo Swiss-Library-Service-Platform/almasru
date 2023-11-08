@@ -133,8 +133,13 @@ def evaluate_names(name1: str, name2: str) -> float:
     """evaluate_names(name1: str, name2: str) -> float
 
     Return the result of the evaluation of similarity of two names."""
-    names1 = [get_ascii(re.sub(r'\W', '', n).lower()) for n in name1.split()]
-    names2 = [get_ascii(re.sub(r'\W', '', n).lower()) for n in name2.split()]
+    names1 = [get_ascii(re.sub(r'\W', '', n).lower())
+                   for n in name1.split()]
+    names2 = [get_ascii(re.sub(r'\W', '', n).lower())
+                   for n in name2.split()]
+
+    names1 = [n for n in names1 if n != '']
+    names2 = [n for n in names2 if n != '']
 
     if len(names1) > len(names2):
         names1, names2 = (names2, names1)
