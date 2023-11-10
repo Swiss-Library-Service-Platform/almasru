@@ -158,9 +158,30 @@ def evaluate_lists_names(names1: List[str], names2: List[str]) -> float:
     if len(names1) < len(names2):
         names2, names1 = (names1, names2)
 
-    unique_combinations = get_unique_combinations(names1, names2)
+    if len(names1) < 5:
 
-    return max([np.mean([evaluate_names(*p) for p in comb]) for comb in unique_combinations])
+        unique_combinations = get_unique_combinations(names1, names2)
+
+        return max([np.mean([evaluate_names(*p) for p in comb]) for comb in unique_combinations])
+    else:
+        # When more than 4 names => not possible to test all combinations
+        # Find only the best matches
+        scores = []
+        for n2 in names2:
+            s_max = -1
+            n1_temp = None
+            for n1 in names1:
+                s = evaluate_names(n1, n2)
+                if s > s_max:
+                    s_max = s
+                    n1_temp = n1
+
+            # Remove the best match to avoid to use it twice
+            names1.remove(n1_temp)
+            scores.append(s_max)
+
+        # Return only the value of the 4 best matches
+        return np.mean(sorted(scores, reverse=True)[:4])
 
 
 @handling_missing_values
