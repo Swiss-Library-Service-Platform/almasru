@@ -79,7 +79,10 @@ def evaluate_extent(extent1: List[int], extent2: List[int]) -> float:
             extent2_bis.add(v)
 
     score2 = len(set.intersection(extent1_bis, extent2_bis)) / len(set.union(extent1_bis, extent2_bis))
-    return (score1 + score2) / 2
+    # Score 3 is used to compare the sum of the extent its less pondered
+    score3 = (1 - np.abs(sum(extent1) - sum(extent2)) / (sum(extent1) + sum(extent2)))\
+        if sum(extent1) + sum(extent2) > 0 else 0
+    return (score1 + score2 + score3 / 2) / 2.5
 
 
 def get_unique_combinations(l1: List[str], l2: List[str]) -> List[List[Tuple]]:
@@ -134,9 +137,9 @@ def evaluate_names(name1: str, name2: str) -> float:
 
     Return the result of the evaluation of similarity of two names."""
     names1 = [get_ascii(re.sub(r'\W', '', n).lower())
-                   for n in name1.split()]
+              for n in name1.split()]
     names2 = [get_ascii(re.sub(r'\W', '', n).lower())
-                   for n in name2.split()]
+              for n in name2.split()]
 
     names1 = [n for n in names1 if n != '']
     names2 = [n for n in names2 if n != '']
