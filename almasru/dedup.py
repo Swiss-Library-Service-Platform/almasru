@@ -6,7 +6,7 @@ from Levenshtein import distance
 import itertools
 from lxml import etree
 
-from typing import Callable, List, Tuple, Dict, Any
+from typing import Callable, List, Tuple, Dict, Any, Optional
 
 
 def handling_missing_values(fn: Callable) -> Callable:
@@ -49,6 +49,38 @@ def evaluate_identifiers(ids1: str, ids2: str) -> float:
     ids1 = set(ids1)
     ids2 = set(ids2)
     if len(set.union(ids1, ids2)) > 0:
+        score = len(set.intersection(ids1, ids2)) / len(set.union(ids1, ids2))
+        return score ** .05 if score > 0 else 0
+    else:
+        return np.nan
+
+
+@handling_missing_values
+def evaluate_sysnums(ids1: str, ids2: str) -> float:
+    """evaluate_identifiers(ids1: str, ids2: str) -> float
+
+    Return the result of the evaluation of similarity of two lists of system numbers."""
+
+    def get_prefix(recid: str) -> Optional[str]:
+        """Return the prefix of a recid if it exists, None otherwise
+
+        :param recid: system number
+
+        :return: prefix of the recid if it exists, None otherwise
+        """
+        prefix_m = re.search(r'^\(.\)', recid)
+        if prefix_m is not None:
+            return prefix_m.group(0)
+
+    ids1 = set(ids1)
+    ids2 = set(ids2)
+    prefixes_ids1 = set([get_prefix(recid) for recid in ids1 if get_prefix(recid) is not None])
+    prefixes_ids2 = set([get_prefix(recid) for recid in ids2 if get_prefix(recid) is not None])
+    if len(set.intersection(prefixes_ids1, prefixes_ids2)) == 0:
+        # No common prefix: difference means nothing
+        return np.nan
+
+    elif len(set.union(ids1, ids2)) > 0:
         score = len(set.intersection(ids1, ids2)) / len(set.union(ids1, ids2))
         return score ** .05 if score > 0 else 0
     else:
@@ -245,7 +277,7 @@ def evaluate_similarity(bib1: Dict[str, Any], bib2: Dict[str, Any]) -> Dict[str,
         'isbns': evaluate_identifiers(bib1['isbns'], bib2['isbns']),
         'issns': evaluate_identifiers(bib1['issns'], bib2['issns']),
         'other_std_num': evaluate_identifiers(bib1['other_std_num'], bib2['other_std_num']),
-        'sysnums': evaluate_identifiers(bib1['sysnums'], bib2['sysnums']),
+        'sysnums': evaluate_sysnums(bib1['sysnums'], bib2['sysnums']),
         'same_fields_existing': evaluate_completeness(bib1, bib2)
     }
     return results
