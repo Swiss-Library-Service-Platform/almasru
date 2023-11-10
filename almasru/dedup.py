@@ -68,7 +68,7 @@ def evaluate_sysnums(ids1: str, ids2: str) -> float:
 
         :return: prefix of the recid if it exists, None otherwise
         """
-        prefix_m = re.search(r'^\(.\)', recid)
+        prefix_m = re.search(r'^\(.+\)', recid)
         if prefix_m is not None:
             return prefix_m.group(0)
 
