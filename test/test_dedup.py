@@ -31,8 +31,8 @@ class TestDedup(unittest.TestCase):
                            'Similarity must be greater than 0.95')
 
         self.assertLess(dedup.evaluate_extent([202, 311], [200, 300]),
-                           0.5,
-                           'Similarity must be greater than 0.5')
+                           0.6,
+                           'Similarity must be less than 0.6')
 
     def test_evaluate_similarity(self):
         mms_id = '991159842549705501'

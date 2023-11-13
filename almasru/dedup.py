@@ -114,7 +114,7 @@ def evaluate_extent(extent1: List[int], extent2: List[int]) -> float:
     # Score 3 is used to compare the sum of the extent its less pondered
     score3 = (1 - np.abs(sum(extent1) - sum(extent2)) / (sum(extent1) + sum(extent2)))\
         if sum(extent1) + sum(extent2) > 0 else 0
-    return (score1 + score2 + score3 / 2) / 2.5
+    return (score1 + score2 + score3) / 3
 
 
 def get_unique_combinations(l1: List[str], l2: List[str]) -> List[List[Tuple]]:
