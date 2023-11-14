@@ -90,8 +90,13 @@ class SruRequest:
                 content = r.content
                 logging.error(self.error_messages[-1])
                 is_error = True
-
-        xml = etree.fromstring(content, parser=SruClient.parser)
+        try:
+            xml = etree.fromstring(content, parser=SruClient.parser)
+        except etree.XMLSyntaxError:
+            self.error_messages.append(f'Error when parsing SRU data, query "{self.query}"')
+            logging.error(self.error_messages[-1])
+            is_error = True
+            xml = etree.fromstring('<root></root>', parser=SruClient.parser)
 
         if xml.find('.//diag:message', namespaces=SruClient.nsmap) is not None:
             self.error_messages.append(f'{xml.find(".//diag:message", namespaces=SruClient.nsmap).text} '
