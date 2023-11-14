@@ -303,24 +303,40 @@ class BriefRecFactory:
             return int(m.group())
 
     @staticmethod
-    def get_format(bib: etree.Element) -> Optional[Literal['book', 'analytical', 'series', 'map', 'projected']]:
-        """get_format(bib: etree.Element) -> Optional[Literal['book', 'analytical', 'series']]
+    def get_33x_summary(bib: etree.Element) -> Optional[str]:
+
+        s = '/'
+        for tag in ['336', '337', '338']:
+            fields = bib.findall(f'.//datafield[@tag="{tag}"]/subfield[@code="b"]')
+            if len(fields) > 0:
+                s += ','.join([f.text for f in fields]) + '/'
+        return s
+
+    @staticmethod
+    def get_format(bib: etree.Element) -> Optional[str]:
+        """get_format(bib: etree.Element) -> Optional[str]
         Get the format of the record from leader field position 6 and 7
 
         :param bib: :class:`etree.Element`
 
         :return: format of the record
         """
+        f33x_summary = BriefRecFactory.get_33x_summary(bib)
         if BriefRecFactory.get_leader_pos67(bib) == 'am':
-            return 'book'
+            return f'book {f33x_summary}'
+
         elif BriefRecFactory.get_leader_pos67(bib) == 'aa':
-            return 'analytical'
+            return f'analytical {f33x_summary}'
+
         elif BriefRecFactory.get_leader_pos67(bib) == 'as':
-            return 'series'
+            return f'series {f33x_summary}'
+
         elif BriefRecFactory.get_leader_pos67(bib) == 'em':
-            return 'map'
+            return f'map {f33x_summary}'
+
         elif BriefRecFactory.get_leader_pos67(bib) == 'gm':
-            return 'projected'
+            return f'projected {f33x_summary}'
+
         else:
             logging.error(f'Unknown format: {BriefRecFactory.get_leader_pos67(bib)}')
             return None
