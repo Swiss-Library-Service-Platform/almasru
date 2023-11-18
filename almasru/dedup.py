@@ -4,7 +4,7 @@ import unicodedata
 import re
 from Levenshtein import distance
 import itertools
-from lxml import etree
+from sklearn.neural_network import MLPClassifier
 
 from typing import Callable, List, Tuple, Dict, Any, Optional
 
@@ -28,24 +28,38 @@ def handling_missing_values(fn: Callable) -> Callable:
 
 def get_ascii(txt: str) -> str:
     """get_ascii(txt: str) -> str
+    Return the ascii version of a string.
 
-    Return the ascii version of a string."""
+    :param txt: string to convert
+
+    :return: ascii version of the string
+    """
     return unicodedata.normalize('NFD', txt).encode('ascii', 'ignore').decode().upper()
 
 
 @handling_missing_values
 def evaluate_year(year1: int, year2: int) -> float:
     """evaluate_year(year1: int, year2: int) -> float
+    Return the result of the evaluation of similarity of two years.
 
-    Return the result of the evaluation of similarity of two years."""
+    :param year1: year to compare
+    :param year2: year to compare
+
+    :return: similarity score between two years as float
+    """
     return 1 / ((abs(year1 - year2) * .5) ** 2 + 1)
 
 
 @handling_missing_values
 def evaluate_identifiers(ids1: str, ids2: str) -> float:
     """evaluate_identifiers(ids1: str, ids2: str) -> float
+    Return the result of the evaluation of similarity of two lists of identifiers.
 
-    Return the result of the evaluation of similarity of two lists of identifiers."""
+    :param ids1: list of identifiers to compare
+    :param ids2: list of identifiers to compare
+
+    :return: similarity score between two lists of identifiers as float
+    """
     ids1 = set(ids1)
     ids2 = set(ids2)
     if len(set.union(ids1, ids2)) > 0:
@@ -58,8 +72,15 @@ def evaluate_identifiers(ids1: str, ids2: str) -> float:
 @handling_missing_values
 def evaluate_sysnums(ids1: str, ids2: str) -> float:
     """evaluate_identifiers(ids1: str, ids2: str) -> float
+    Return the result of the evaluation of similarity of two lists of system numbers.
 
-    Return the result of the evaluation of similarity of two lists of system numbers."""
+    It considers only the system numbers with the same prefix.
+
+    :param ids1: list of system numbers to compare
+    :param ids2: list of system numbers to compare
+
+    :return: similarity score between two lists of system numbers as float
+    """
 
     def get_prefix(recid: str) -> Optional[str]:
         """Return the prefix of a recid if it exists, None otherwise
@@ -90,8 +111,13 @@ def evaluate_sysnums(ids1: str, ids2: str) -> float:
 @handling_missing_values
 def evaluate_extent(extent1: List[int], extent2: List[int]) -> float:
     """evaluate_extent(extent1: List[int], extent2: List[int]) -> float
+    Return the result of the evaluation of similarity of two extents.
 
-    Return the result of the evaluation of similarity of two extents."""
+    :param extent1: list of extent to compare
+    :param extent2: list of extent to compare
+
+    :return: similarity score between two extents as float
+    """
     extent1 = set(extent1)
     extent2 = set(extent2)
     score1 = len(set.intersection(extent1, extent2)) / len(set.union(extent1, extent2))
@@ -119,8 +145,13 @@ def evaluate_extent(extent1: List[int], extent2: List[int]) -> float:
 
 def get_unique_combinations(l1: List[str], l2: List[str]) -> List[List[Tuple]]:
     """get_unique_combinations(l1: List[str], l2: List[str]) -> List[List[Tuple]]
+    Used to search the best match with names like authors or publishers.
 
-    Used to search the best match with names like authors or publishers."""
+    :param l1: list of names to compare
+    :param l2: list of names to compare
+
+    :return: list of unique combinations of names
+    """
     if len(l1) < len(l2):
         l2, l1 = (l1, l2)
 
@@ -139,7 +170,13 @@ def get_unique_combinations(l1: List[str], l2: List[str]) -> List[List[Tuple]]:
 def evaluate_lists_texts(texts1: List[str], texts2: List[str]) -> float:
     """evaluate_lists_texts(texts1: List[str], texts2: List[str]) -> float
 
-    Return the result of the best pairing texts."""
+    Return the result of the best pairing texts.
+
+    :param texts1: list of texts to compare
+    :param texts2: list of texts to compare
+
+    :return: similarity score between two lists of texts as float
+    """
     if len(texts1) < len(texts2):
         texts2, texts1 = (texts1, texts2)
     unique_combinations = get_unique_combinations(texts1, texts2)
@@ -150,10 +187,14 @@ def evaluate_lists_texts(texts1: List[str], texts2: List[str]) -> float:
 @handling_missing_values
 def evaluate_lists_names(names1: List[str], names2: List[str]) -> float:
     """evaluate_lists_names(names1: List[str], names2: List[str]) -> float
-
     Return the result of the best pairing authors.
 
     The function test all possible pairings and return the max value.
+
+    :param names1: list of names to compare
+    :param names2: list of names to compare
+
+    :return: similarity score between two lists of names as float
     """
     if len(names1) < len(names2):
         names2, names1 = (names1, names2)
@@ -187,8 +228,13 @@ def evaluate_lists_names(names1: List[str], names2: List[str]) -> float:
 @handling_missing_values
 def evaluate_names(name1: str, name2: str) -> float:
     """evaluate_names(name1: str, name2: str) -> float
+    Return the result of the evaluation of similarity of two names.
 
-    Return the result of the evaluation of similarity of two names."""
+    :param name1: name to compare
+    :param name2: name to compare
+
+    :return: similarity score between two names as float
+    """
     names1 = [get_ascii(re.sub(r'\W', '', n).lower())
               for n in name1.split()]
     names2 = [get_ascii(re.sub(r'\W', '', n).lower())
@@ -235,8 +281,13 @@ def evaluate_names(name1: str, name2: str) -> float:
 @handling_missing_values
 def evaluate_texts(text1: str, text2: str) -> float:
     """evaluate_texts(text1: str, text2: str) -> float
+    Return the result of the evaluation of similarity of two texts.
 
-    Return the result of the evaluation of similarity of two texts."""
+    :param text1: text to compare
+    :param text2: text to compare
+
+    :return: similarity score between two texts as float
+    """
     if len(text1) < len(text2):
         text1, text2 = (text2, text1)
     coef = len(text1) - len(text2) + 1
@@ -256,8 +307,14 @@ def evaluate_texts(text1: str, text2: str) -> float:
 @handling_missing_values
 def evaluate_format(format1: str, format2: str) -> float:
     """evaluate_format(format1: str, format2: str) -> float
+    Return the result of the evaluation of similarity of two formats
 
-    Return the result of the evaluation of similarity of two formats"""
+    If format is the same it returns 1, 0 otherwise
+
+    :param format1: format to compare
+    :param format2: format to compare
+
+    :return: similarity score between two formats as float"""
     return float(format1 == format2)
 
 
@@ -266,11 +323,19 @@ def evaluate_completeness(bib1: Dict[str, Any], bib2: Dict[str, Any]) -> float:
     """evaluate_completeness(bib1: Dict[str, Any], bib2: Dict[str, Any]) -> float
 
     Return the result of the evaluation of similarity of two bib records in number
-    of available fields."""
+    of available fields.
+
+    :param bib1: dict containing the data of a bib record
+    :param bib2: dict containing the data of a bib record
+
+    :return: similarity score between two bib records as float
+    """
     nb_common_existing_fields = 0
+
     for k in bib1:
         if (bib1[k] is None) == (bib2[k] is None):
             nb_common_existing_fields += 1
+
     return 1 / (1 + (len(bib1) - nb_common_existing_fields))
 
 
@@ -304,12 +369,52 @@ def evaluate_similarity(bib1: Dict[str, Any], bib2: Dict[str, Any]) -> Dict[str,
     return results
 
 
-def get_similarity_score(bib1: Dict[str, Any], bib2: Dict[str, Any]) -> float:
+def get_similarity_score(bib1: Dict[str, Any],
+                         bib2: Dict[str, Any],
+                         clf: Optional[MLPClassifier] = None,
+                         nan: Optional[float] = 0) -> float:
     """get_similarity_score(bib1: Dict[str, Any], bib2: Dict[str, Any]) -> float
+    Get the similarity score between two bib records.
+
+    With classifiers, the function returns the similarity score between two bib records. The threshold
+    to determine if two records are similar or not is 0.5.
 
     :param bib1: Dict[str, Any] containing the data of a bib record
     :param bib2: Dict[str, Any] containing the data of a bib record
+    :param clf: MLPClassifier used to predict the similarity score if none is given the function will
+    calculate the mean of the similarity scores of the fields
+    :param nan: value to use if the similarity score is NaN
 
-    :return: similarity score between two bib records as float"""
+    :return: similarity score between two bib records as float
+    """
     results = evaluate_similarity(bib1, bib2)
-    return np.mean([results[k] for k in results if pd.isna(results[k]) is False])
+
+    if clf is not None:
+        # Columns used in BriefRec to analyse similarity
+        columns = ['format',
+                   'title',
+                   'short_title',
+                   'editions',
+                   'creators',
+                   'corp_creators',
+                   'date_1',
+                   'date_2',
+                   'publishers',
+                   'series',
+                   'extent',
+                   'isbns',
+                   'issns',
+                   'other_std_num',
+                   'sysnums',
+                   'same_fields_existing']
+
+        # Prepare DataFrame to save similarity evaluations
+        df = pd.DataFrame(columns=columns)
+        df.loc[0] = results
+        df = df.fillna(nan)
+
+        # Predict similarity score, first index to get the first row and second index to get probability of True.
+        # 0.5 is the threshold to determine if two records are similar or not
+        return clf.predict_proba(df)[0][1]
+    else:
+        return np.mean([results[k] for k in results if pd.isna(results[k]) is False])

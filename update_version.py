@@ -3,6 +3,7 @@ import almasru
 import re
 
 version = almasru.__version__
+commit_message = almasru.commit_message
 
 # pyproject.toml
 with open('pyproject.toml') as f:
@@ -45,7 +46,7 @@ os.system('python -m build')
 
 # Commit the new version
 os.system('git add .')
-os.system(f'git commit -m "Create version {version}"')
+os.system(f'git commit -m "{commit_message} - Create version {version}"')
 os.system(f'git push')
 
 # Upload the package on pipy

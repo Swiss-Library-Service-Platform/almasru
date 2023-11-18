@@ -4,6 +4,7 @@ from almasru import config_log, dedup
 import unittest
 import numpy as np
 import pandas as pd
+import pickle
 import shutil
 
 config_log()
@@ -66,6 +67,33 @@ class TestDedup(unittest.TestCase):
         brief_rec2 = BriefRec(rec2)
         result = dedup.get_similarity_score(brief_rec.data, brief_rec2.data)
         self.assertLess(result, 0.5, f'Mean should be less than 0.5 when comparing "{mms_id}" and "{mms_id2}", returned {result}')
+
+    def test_evaluate_similarity_score_2(self):
+        mms_id = '991159842549705501'
+        rec = SruRecord(mms_id)
+        brief_rec = BriefRec(rec)
+        mms_id2 = '991159842549705501'
+        rec2 = SruRecord(mms_id2)
+        brief_rec2 = BriefRec(rec2)
+        with open('classifiers/clf_MLPClassifier_mono2.pickle', 'rb') as f:
+            clf = pickle.load(f)
+
+        result = dedup.get_similarity_score(brief_rec.data, brief_rec2.data, clf)
+
+        self.assertGreater(result,
+                           0.99,
+                           f'Result should near to 1.0 when comparing same records, returned {result}')
+
+        mms_id = '991159842549705501'
+        rec = SruRecord(mms_id)
+        brief_rec = BriefRec(rec)
+        mms_id2 = '991159842649705501'
+        rec2 = SruRecord(mms_id2)
+        brief_rec2 = BriefRec(rec2)
+        result = dedup.get_similarity_score(brief_rec.data, brief_rec2.data, clf)
+        self.assertLess(result,
+                        0.5,
+                        f'Result should be less than 0.5 when comparing "{mms_id}" and "{mms_id2}", returned {result}')
 
 
 if __name__ == '__main__':
