@@ -1,2 +1,2 @@
-__version__ = '1.2.16'
-commit_message = f'Documentation update and allow use of classifiers in dedup module'
+__version__ = '1.2.17'
+commit_message = f'Minor change in documentation'

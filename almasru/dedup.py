@@ -382,7 +382,7 @@ def get_similarity_score(bib1: Dict[str, Any],
     :param bib1: Dict[str, Any] containing the data of a bib record
     :param bib2: Dict[str, Any] containing the data of a bib record
     :param clf: MLPClassifier used to predict the similarity score if none is given the function will
-    calculate the mean of the similarity scores of the fields
+        calculate the mean of the similarity scores of the fields
     :param nan: value to use if the similarity score is NaN
 
     :return: similarity score between two bib records as float
