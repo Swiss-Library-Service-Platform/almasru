@@ -19,7 +19,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="BriefRec class" href="briefrec.html" />
+    <link rel="next" title="IzSruRecord class" href="izsrurecord.html" />
     <link rel="prev" title="SruRequest class" href="srurequest.html" /> 
 </head>
 
@@ -59,6 +59,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#almasru.client.SruRecord.get_inventory_info"><code class="docutils literal notranslate"><span class="pre">SruRecord.get_inventory_info()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#almasru.client.SruRecord.get_isbn"><code class="docutils literal notranslate"><span class="pre">SruRecord.get_isbn()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#almasru.client.SruRecord.get_issn"><code class="docutils literal notranslate"><span class="pre">SruRecord.get_issn()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#almasru.client.SruRecord.get_iz_record"><code class="docutils literal notranslate"><span class="pre">SruRecord.get_iz_record()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#almasru.client.SruRecord.get_iz_using_rec"><code class="docutils literal notranslate"><span class="pre">SruRecord.get_iz_using_rec()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#almasru.client.SruRecord.get_mms_id"><code class="docutils literal notranslate"><span class="pre">SruRecord.get_mms_id()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#almasru.client.SruRecord.get_parent_rec"><code class="docutils literal notranslate"><span class="pre">SruRecord.get_parent_rec()</span></code></a></li>
@@ -71,6 +72,7 @@
 </li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="izsrurecord.html"><code class="docutils literal notranslate"><span class="pre">IzSruRecord</span></code> class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="briefrec.html"><code class="docutils literal notranslate"><span class="pre">BriefRec</span></code> class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="briefrec.html#briefrecfactory-class"><code class="docutils literal notranslate"><span class="pre">BriefRecFactory</span></code> class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dedup.html"><code class="docutils literal notranslate"><span class="pre">dedup</span></code> submodule</a></li>
@@ -105,7 +107,7 @@
 <h1><code class="docutils literal notranslate"><span class="pre">SruRecord</span></code> class<a class="headerlink" href="#srurecord-class" title="Link to this heading"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="almasru.client.SruRecord">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">almasru.client.</span></span><span class="sig-name descname"><span class="pre">SruRecord</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mms_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xml</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Element</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#almasru.client.SruRecord" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">almasru.client.</span></span><span class="sig-name descname"><span class="pre">SruRecord</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mms_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xml</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Element</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#almasru.client.SruRecord" title="Link to this definition"></a></dt>
 <dd><p>Class representing a single XML record from SRU</p>
 <p>Either <cite>xml</cite> or <cite>mms_id</cite> must be provided. If mms_id is provided the constructor
 will fetch the record through SRU query.</p>
@@ -117,6 +119,7 @@ will fetch the record through SRU query.</p>
 <li><p><strong>error_messages</strong> – list of string with the error messages</p></li>
 <li><p><strong>warning</strong> – boolean, is True in case of warning</p></li>
 <li><p><strong>warning_messages</strong> – list of string containing the warning messages</p></li>
+<li><p><strong>sru_client</strong> – <a class="reference internal" href="sruclient.html#almasru.client.SruClient" title="almasru.client.SruClient"><code class="xref py py-class docutils literal notranslate"><span class="pre">almasru.client.SruClient</span></code></a> used to fetch the record</p></li>
 </ul>
 </dd>
 </dl>
@@ -124,6 +127,10 @@ will fetch the record through SRU query.</p>
 <dt class="sig sig-object py" id="almasru.client.SruRecord.get_035_fields">
 <span class="sig-name descname"><span class="pre">get_035_fields</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slsp_only</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#almasru.client.SruRecord.get_035_fields" title="Link to this definition"></a></dt>
 <dd><p>Return a set of system numbers of 035 fields</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Network ID inside 035 is simplified by removing prefix</p>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -256,6 +263,24 @@ are ‘773’, ‘800’, ‘810’, ‘811’, ‘830’.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="almasru.client.SruRecord.get_iz_record">
+<span class="sig-name descname"><span class="pre">get_iz_record</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">server_url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="s"><span class="pre">'IzSruRecord'</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#almasru.client.SruRecord.get_iz_record" title="Link to this definition"></a></dt>
+<dd><p>Return <a class="reference internal" href="izsrurecord.html#almasru.client.IzSruRecord" title="almasru.client.IzSruRecord"><code class="xref py py-class docutils literal notranslate"><span class="pre">almasru.client.IzSruRecord</span></code></a> from provided server url</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>server_url</strong> – string with url of the IZ SRU server</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="izsrurecord.html#almasru.client.IzSruRecord" title="almasru.client.IzSruRecord"><code class="xref py py-class docutils literal notranslate"><span class="pre">almasru.client.IzSruRecord</span></code></a></p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>the function doesn’t work in all cases. It can only found records with inventory.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="almasru.client.SruRecord.get_iz_using_rec">
 <span class="sig-name descname"><span class="pre">get_iz_using_rec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#almasru.client.SruRecord.get_iz_using_rec" title="Link to this definition"></a></dt>
 <dd><p>Get the list of IZ using this record</p>
@@ -340,7 +365,7 @@ records of the list currently being processed to be considered as preventing del
 records of the list currently being processed to be considered as preventing deletion.</p>
 </dd>
 </dl>
-<p>The method checks related records and inventory in other IZ.
+<p>The method checks related records and inventory in IZ.
 1. Test if the record has 852 fields. It would indicate existing holding in any IZ
 2. Test if record has analytical records children (children linked with 773 field)
 3. Test if the record is target of 8xx or 773 fields of other records
@@ -373,7 +398,7 @@ is <cite>rec_&lt;mms_id&gt;.xml</cite></p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="srurequest.html" class="btn btn-neutral float-left" title="SruRequest class" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="briefrec.html" class="btn btn-neutral float-right" title="BriefRec class" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="izsrurecord.html" class="btn btn-neutral float-right" title="IzSruRecord class" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
