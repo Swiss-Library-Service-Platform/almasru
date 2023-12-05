@@ -23,6 +23,7 @@ class SruRequest:
     :ivar are_more_results_available: bool indicating if more records than the limit is available
     :ivar records: list of :class:`almasru.client.SruRecord`
     :ivar base_url: base url of the SRU server
+    :ivar is_iz_request: flag to indicate if request is into IZ
 
     :example:
 
@@ -30,27 +31,36 @@ class SruRequest:
 
     """
 
-    def __init__(self, query: str, limit: int = 10, client: 'SruClient' = None) -> None:
+    def __init__(self, query: str,
+                 limit: Optional[int] = 10,
+                 base_url: Optional[str] = None,
+                 is_iz_request: Optional[bool] = False) -> None:
         self.query = query
         self.limit = limit
         self.error = False
         self.error_messages = []
         self.are_more_results_available = False
         self.records = []
-        self.base_url = client.base_url if client is not None else SruClient.base_url
+        self.base_url = base_url if base_url is not None else SruClient.base_url
+        self.is_iz_request = is_iz_request
         self._fetch_records()
 
     def __hash__(self) -> int:
         return int(hashlib.sha1(bytes(self._get_query_path(), 'utf-8')).hexdigest(), 16)
 
     def __eq__(self, other) -> bool:
-        return self.query == other.query
+        return self.query == other.query and self.base_url == other.base_url
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}('{self.query}', limit={self.limit})"
+        if self.is_iz_request is False:
+            return (f"{self.__class__.__name__}('{self.query}', limit={self.limit}, "
+                    f"base_url='{self.base_url}')")
+        else:
+            return (f"{self.__class__.__name__}('{self.query}', limit={self.limit}, "
+                    f"base_url='{self.base_url}', iz_request=True)")
 
     def _get_query_path(self) -> str:
-        return f'{self.query}__{self.limit}'
+        return f'{self.base_url}__{self.query}__{self.limit}'
 
     @staticmethod
     def _build_sru_params(query: str, start_record: int = 1, maximum_records: int = 10) -> Dict[AnyStr, AnyStr]:
@@ -137,9 +147,13 @@ class SruRequest:
             if rec_number > self.limit:
                 logging.warning(f'{repr(self)}: number of available results exceed the limit provided')
                 self.are_more_results_available = True
+            if self.is_iz_request is False:
+                new_records = [SruRecord(xml=record, base_url=self.base_url) for record
+                               in xml.findall('.//m:record', namespaces=SruClient.nsmap)]
+            else:
+                new_records = [IzSruRecord(xml=record, base_url=self.base_url) for record
+                               in xml.findall('.//m:record', namespaces=SruClient.nsmap)]
 
-            new_records = [SruRecord(xml=record) for record
-                           in xml.findall('.//m:record', namespaces=SruClient.nsmap)]
             if len(new_records) == 0:
                 logging.warning(f'No record found for query {self.query}')
                 break
@@ -169,6 +183,8 @@ class SruClient:
     :cvar records: MMS ID as key and `etree.Element` of the Marc XML of the record as value
     :cvar requests: dict with query__limit pattern as key and :class:`almasru.client.SruRequest` as value
     :ivar base_url: base url of the SRU server
+    :ivar is_iz_server: flag indicating if the SRU server is related to an IZ. Useful
+        to get :class:`almasru.client.IzSruRecord` instead of :class:`almasru.client.SruRecord`
     """
     nsmap = namespaces = {'srw': 'http://www.loc.gov/zing/srw/',
                           'm': 'http://www.loc.gov/MARC21/slim',
@@ -184,15 +200,22 @@ class SruClient:
     requests = dict()
     records = dict()
 
-    def __init__(self, base_url: Optional[str] = None) -> None:
+    def __init__(self,
+                 base_url: Optional[str] = None,
+                 is_iz_server: Optional[bool] = None) -> None:
         """Construct a new SRU client
         """
         if base_url is not None:
             self.base_url = base_url
 
+        self.is_iz_server = is_iz_server
+
         # Create the requests folder if it doesn't exist
         if os.path.isdir('./requests') is False:
             os.mkdir('./requests')
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(base_url='{self.base_url}', is_iz_server={self.is_iz_server})"
 
     @classmethod
     def clean_old_requests(cls) -> None:
@@ -222,11 +245,11 @@ class SruClient:
 
         :return: :class:`almasru.client.SruRequest`
         """
-        if f'{query}__{limit}' not in self.requests:
-            req = SruRequest(query, limit, self)
-            self.requests[f'{query}__{limit}'] = req
+        if f'{self.base_url}__{query}__{limit}' not in self.requests:
+            req = SruRequest(query, limit, self.base_url, self.is_iz_server)
+            self.requests[f'{self.base_url}__{query}__{limit}'] = req
 
-        return self.requests[f'{query}__{limit}']
+        return self.requests[f'{self.base_url}__{query}__{limit}']
 
 
 class SruRecord:
@@ -240,9 +263,12 @@ class SruRecord:
     :ivar error_messages: list of string with the error messages
     :ivar warning: boolean, is True in case of warning
     :ivar warning_messages: list of string containing the warning messages
+    :ivar sru_client: :class:`almasru.client.SruClient` used to fetch the record
     """
 
-    def __init__(self, mms_id: Optional[str] = None, xml: Optional[etree.Element] = None):
+    def __init__(self, mms_id: Optional[str] = None,
+                 xml: Optional[etree.Element] = None,
+                 base_url: Optional[str] = None) -> None:
         """Constructor of SruRecord"""
         self.mms_id = mms_id
         self.error = False
@@ -252,19 +278,14 @@ class SruRecord:
         self._child_rec_num_sys = None
         self._child_rec_std_num = None
         self._parent_rec = None
-
-        if SruClient().base_url is None:
-            self.error = True
-            self.error_messages.append('Base url for SRU server not defined')
-            logging.critical('Base url for SRU server not defined')
-            exit()
+        self.sru_client = self._set_sru_client(base_url)
 
         # MMS_ID provided, fetch record data with SRU
-        if mms_id in SruClient().records:
-            xml = SruClient().records[mms_id]
+        if f'{mms_id}_{self.sru_client.base_url}' in self.sru_client.records:
+            xml = self.sru_client.records[f'{mms_id}_{self.sru_client.base_url}']
 
         elif mms_id is not None and self.error is False:
-            r = SruClient().fetch_records(f'alma.mms_id={mms_id}')
+            r = self.sru_client.fetch_records(f'alma.mms_id={mms_id}')
             if r.error is True:
                 self.error = True
                 self.error_messages += r.error_messages
@@ -280,7 +301,7 @@ class SruRecord:
 
         if self.error is False:
             self.mms_id = self.get_mms_id()
-            SruClient().records[self.mms_id] = xml
+            self.sru_client.records[f'{self.mms_id}_{self.sru_client.base_url}'] = xml
 
     def __str__(self) -> str:
         if self.data is not None:
@@ -289,13 +310,24 @@ class SruRecord:
             return ''
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}('{self.mms_id}')"
+        return f"{self.__class__.__name__}('{self.mms_id}', base_url='{self.sru_client.base_url}')"
 
     def __hash__(self) -> int:
         return int(self.mms_id)
 
     def __eq__(self, other) -> bool:
         return self.mms_id == other.mms_id
+
+    def _set_sru_client(self, base_url):
+        if base_url is not None:
+            return SruClient(base_url=base_url)
+        elif SruClient().base_url is not None:
+            return SruClient()
+        else:
+            self.error = True
+            self.error_messages.append('Base url for SRU server not defined')
+            logging.critical('Base url for SRU server not defined')
+            exit()
 
     @check_error
     def get_mms_id(self) -> Optional[str]:
@@ -313,6 +345,8 @@ class SruRecord:
     def get_035_fields(self, var: bool = False, slsp_only: bool = False) -> Set[str]:
         """get_035_fields(self, var: bool = False, slsp_only: bool = False) -> Set[str]
         Return a set of system numbers of 035 fields
+
+        .. note:: Network ID inside 035 is simplified by removing prefix
 
         :param var: Parameters: flag indicating if truncated system numbers should be tested
         :param slsp_only: Parameters: flag indicating if only slsp system numbers should be returned
@@ -338,6 +372,18 @@ class SruRecord:
             prefixes = '|'.join(['RERO', 'IDSBB', 'IDSLU', 'IDSSG', 'NEBIS', 'SBT', 'ALEX', 'ABN', 'swissbib', 'HAN'])
             other_sys_ids = {sys_num for sys_num in other_sys_ids
                              if re.match(r'^\((?:{})\).+'.format(prefixes), sys_num)}
+
+        # Check if NZ mms id is available
+        # NZ mms_id are only available in IZ sru requests, for example: (EXLNZ-41SLSP_NETWORK)991125596919705501
+        nz_ids_field = self.data.xpath('./m:datafield[@tag="035"]/m:subfield[starts-with(text(), "(EXLNZ")]',
+                                       namespaces=SruClient.nsmap)
+        if len(nz_ids_field) > 0:
+            nz_mms_id = nz_ids_field[0].text
+
+            m = re.match(r'\(.+\)(\d+)', nz_mms_id)
+            if m is not None:
+                other_sys_ids.add(m.group(1))
+
         return other_sys_ids
 
     @check_error
@@ -442,7 +488,7 @@ class SruRecord:
             # https://developers.exlibrisgroup.com/blog/how-to-configure-sru-and-structure-sru-retrieval-queries/
             query = f'alma.other_system_number=={sys_num}' if '-' in sys_num or '_' in sys_num \
                 else f'alma.other_system_number={sys_num}'
-            req = SruClient().fetch_records(query, limit=500)
+            req = self.sru_client.fetch_records(query, limit=500)
 
             if req.error is True:
                 continue
@@ -527,7 +573,7 @@ class SruRecord:
             # Query cannot have "==" for standard_number, for this reason we need to remove the "-"
             query = f'alma.standard_number={std_num.replace("-", "")}'
 
-            req = SruClient().fetch_records(query, limit=500)
+            req = self.sru_client.fetch_records(query, limit=500)
 
             if req.error is True:
                 continue
@@ -625,7 +671,7 @@ class SruRecord:
                     # For the search, hyphen should be removed
                     query = f'alma.standard_number={std_num.replace("-", "")}'
 
-                    req = SruClient().fetch_records(query, limit=500)
+                    req = self.sru_client.fetch_records(query, limit=500)
                     if req.error is True:
                         continue
 
@@ -658,7 +704,7 @@ class SruRecord:
                         query = f'alma.other_system_number_active_035=={sys_num}' if '-' in sys_num or '_' in sys_num \
                             else f'alma.other_system_number_active_035={sys_num}'
 
-                    req = SruClient().fetch_records(query, limit=500)
+                    req = self.sru_client.fetch_records(query, limit=500)
                     if req.error is True:
                         continue
 
@@ -728,7 +774,7 @@ class SruRecord:
                                     namespaces=SruClient.nsmap)
         list_izs = [f.find('./m:subfield[@code="a"]', namespaces=SruClient.nsmap).text for f in fields852]
         if len(list_izs) > 0:
-            logging.info(f'{repr(self)}: record used in other IZs: {", ".join(list_izs)}')
+            logging.info(f'{repr(self)}: record used in IZ: {", ".join(list_izs)}')
         else:
             logging.info(f'{repr(self)}: record not used in the IZs')
 
@@ -812,7 +858,7 @@ class SruRecord:
         :param removable_rec_mms_id: list of MMS_ID of records that are safe to be removed. This is used to avoid
             records of the list currently being processed to be considered as preventing deletion.
 
-        The method checks related records and inventory in other IZ.
+        The method checks related records and inventory in IZ.
         1. Test if the record has 852 fields. It would indicate existing holding in any IZ
         2. Test if record has analytical records children (children linked with 773 field)
         3. Test if the record is target of 8xx or 773 fields of other records
@@ -824,7 +870,7 @@ class SruRecord:
         if removable_rec_mms_id is None:
             removable_rec_mms_id = []
 
-        # Check if record used by other IZ and has holdings
+        # Check if record used by IZ and has holdings
         list_izs = self.get_iz_using_rec()
         if len(list_izs) > 0:
             logging.warning(f'{repr(self)} cannot be deleted: record used in IZs: {", ".join(list_izs)}')
@@ -882,8 +928,7 @@ class SruRecord:
         children_mms_id = set([field['child_MMS_ID'] for field in children['fields_related_records']
                               if field['field'][:3] in ['773', '800', '810', '811', '830']])
 
-        # NOTE: le 773 empêche la suppression: code à corriger
-        return [SruRecord(mms_id) for mms_id in children_mms_id]
+        return [child for child in children['related_records'] if child.mms_id in children_mms_id]
 
     @check_error
     def get_parent_removable_candidate_rec(self) -> List['SruRecord']:
@@ -899,7 +944,7 @@ class SruRecord:
         parents = self.get_parent_rec()
         parents_mms_id = set([field['parent_MMS_ID'] for field in parents['fields_related_records']
                               if field['field'][:3] == '773'])
-        return [SruRecord(mms_id) for mms_id in parents_mms_id]
+        return [parent for parent in parents['related_records'] if parent.mms_id in parents_mms_id]
 
     @check_error
     def save(self) -> None:
@@ -916,3 +961,292 @@ class SruRecord:
 
         with open(f'./records/rec_{self.mms_id}.xml', 'w') as f:
             f.write(str(self))
+    def get_iz_record(self, server_url: str) -> Optional['IzSruRecord']:
+        """get_iz_record(self, server_url: str) -> Optional['IzSruRecord']
+        Return :class:`almasru.client.IzSruRecord` from provided server url
+
+        :param server_url: string with url of the IZ SRU server
+        :return: :class:`almasru.client.IzSruRecord`
+
+        .. note :: the function doesn't work in all cases. It can only found records with inventory.
+        """
+        sru_client = SruClient(base_url=server_url, is_iz_server=True)
+        inventory_info = self.get_inventory_info()
+        for rec in inventory_info:
+
+            izrec = IzSruRecord(rec['MMS ID'], base_url=server_url)
+            _ = izrec.data
+            if izrec.error is False:
+                return izrec
+
+        return None
+
+
+
+
+class IzSruRecord(SruRecord):
+    """Class representing a single XML IZ record from SRU
+
+    Either `xml` or `mms_id` must be provided. If mms_id is provided the constructor
+    will fetch the record through SRU query.
+
+    :ivar mms_id: mms_id of the record to fetch
+    :ivar error: boolean, is True in case of error
+    :ivar error_messages: list of string with the error messages
+    :ivar warning: boolean, is True in case of warning
+    :ivar warning_messages: list of string containing the warning messages
+    :ivar sru_client: :class:`almasru.client.SruClient` used to fetch the record
+    :ivar sru_client: :class:`almasru.client.SruClient` used to fetch the record in the NZ -> useful to test links
+        with NZ ID (in 773 or 830 field, for example)
+    """
+
+    def __init__(self, mms_id: Optional[str] = None,
+                 xml: Optional[etree.Element] = None,
+                 base_url: Optional[str] = None,
+                 nz_url: Optional[str] = None) -> None:
+        super().__init__(mms_id, xml, base_url)
+        if nz_url is not None:
+            self.nz_sru_client = SruClient(base_url=nz_url, is_iz_server=False)
+        else:
+            self.nz_sru_client = None
+
+    def __repr__(self) -> str:
+        if hasattr(self, 'nz_sru_client') and self.nz_sru_client is not None:
+            return (f"{self.__class__.__name__}('{self.mms_id}',"
+                    f" base_url='{self.sru_client.base_url}',"
+                    f" nz_url='{self.nz_sru_client.base_url}')")
+        else:
+            return super().__repr__()
+
+    def _set_sru_client(self, base_url):
+        if base_url is not None:
+            return SruClient(base_url=base_url, is_iz_server=True)
+        elif SruClient().base_url is not None:
+            return SruClient(is_iz_server=True)
+        else:
+            self.error = True
+            self.error_messages.append('Base url for SRU server not defined')
+            logging.critical('Base url for SRU server not defined')
+            exit()
+
+    @check_error
+    def get_inventory_info(self) -> List[Dict]:
+        """get_inventory_info(self) -> List[Dict]
+        Get information about the record in the IZ
+
+        The method analyse the 852 fields and returns a list with dictionaries containing:
+        - "IZ": IZ code
+        - "MMS ID": MMS ID of the record in the IZ
+        - "format": format of the record, "P" for print, "E" for electronic, "D" for digital
+
+        :return: list of records in the IZ linked to the NZ record
+        """
+        # Fetch 852 fields with inventory information
+        fields_ava = self.data.xpath(f'./m:datafield[@tag="AVA"]',
+                                     namespaces=SruClient.nsmap)
+
+        fields = {'IZ': 'a',
+                  'library': 'b',
+                  'location': 'j',
+                  'availability': 'e',
+                  'holding': '8',
+                  'nb_items': 'f'}
+
+        inventory_info = []
+        for field_ava in fields_ava:
+            f = {}
+            for field in fields:
+                subfield =field_ava.find(f'./m:subfield[@code="{fields[field]}"]', namespaces=SruClient.nsmap)
+                if subfield is not None:
+                    f[field] = subfield.text
+            inventory_info.append(f)
+
+        logging.info(f'{repr(self)}: {len(inventory_info)} holdings in IZ found')
+        return inventory_info
+
+    @check_error
+    def get_nz_mms_id(self):
+        """Fetch MMS ID of the network zone
+
+        :return: MMS ID of the network zone from 035 field
+        """
+        nz_ids_field = self.data.xpath('./m:datafield[@tag="035"]/m:subfield[starts-with(text(), "(EXLNZ")]',
+                                       namespaces=SruClient.nsmap)
+        if len(nz_ids_field) > 0:
+            nz_mms_id = nz_ids_field[0].text
+
+            m = re.match(r'\(.+\)(\d+)', nz_mms_id)
+            if m is not None:
+                return m.group(1)
+
+        return None
+
+    @check_error
+    def is_removable(self, removable_rec_mms_id: Optional[List[str]] = None) -> Tuple[bool, str]:
+        """is_removable(self, removable_rec_mms_id: Optional[List[str]] = None) -> Tuple[bool, str]
+        Check if a record is safe to be removed
+
+        :param removable_rec_mms_id: list of MMS_ID of records that are safe to be removed. This is used to avoid
+            records of the list currently being processed to be considered as preventing deletion.
+
+        The method checks related records and inventory in IZ.
+        1. Test if the record has 852 fields. It would indicate existing holding in any IZ
+        2. Test if record has analytical records children (children linked with 773 field)
+        3. Test if the record is target of 8xx or 773 fields of other records
+        4. Test if the record has a 773 field targeting a record with inventory
+
+        :return: tuple containing bool indicating if the record can be safely removed and a message.
+        """
+        # Set default value for removable_rec_mms_id
+        if removable_rec_mms_id is None:
+            removable_rec_mms_id = []
+
+        # Check if record used by IZ and has holdings
+        inventory_info = self.get_inventory_info()
+        if len(inventory_info) > 0:
+            logging.warning(f'{repr(self)} cannot be deleted: record used in the IZ: {len(inventory_info)} holding(s)')
+            return False, 'Record has inventory in the IZ'
+
+        children = self.get_child_removable_candidate_rec()
+        for rec in children:
+            inventory_info = rec.get_inventory_info()
+
+            if len(inventory_info) > 0:
+                logging.warning(f'{repr(self)} cannot be deleted: record has at least a child record with '
+                                f'inventory: {repr(rec)}')
+                return False, 'Child record has inventory'
+
+        parents = self.get_parent_removable_candidate_rec()
+
+        for parent in parents:
+            if type(parent).__name__ == 'SruRecord':
+                parent = parent.get_iz_record(self.sru_client.base_url)
+                if parent is None:
+                    continue
+
+            inventory_info = parent.get_inventory_info()
+
+            if len(inventory_info) > 0:
+                logging.warning(f'{repr(self)} cannot be deleted: record has at least a parent record with '
+                                f'inventory: {repr(parent)}')
+                return False, 'Parent record has inventory'
+
+        for rec in parents:
+            inventory_info = rec.get_inventory_info()
+            if type(rec).__name__ == 'SruRecord':
+                pass
+
+        return True, 'REMOVABLE'
+
+    def get_parent_rec(self) -> Dict:
+        """get_parent_rec(self) -> Dict
+        Get parents records of the current record
+
+        Uses the content of fields 7xx and 8xx to get all parent records. the method checks standard numbers
+        in subfields "x" or "z" and system numbers in "w" subfield.
+
+        :return: dictionary describing the result of the analysis
+        """
+        if self._parent_rec is not None:
+            return self._parent_rec
+
+        # List of datafields to check
+        fields_to_test = ['773', '774', '776', '777', '780', '785', '786', '787', '800', '810', '811', '830']
+
+        fields_related_records = []
+        records = set()
+
+        # Parse the record to find links to parents
+        for field in fields_to_test:
+            xml_fields = self.data.findall(f'./m:datafield[@tag="{field}"]', namespaces=SruClient.nsmap)
+            for xml_field in xml_fields:
+
+                # In subfield "x" are ISSN and ISBN
+                for subfield_code in ['x', 'z']:
+                    subfield = xml_field.find(f'./m:subfield[@code="{subfield_code}"]', namespaces=SruClient.nsmap)
+                    if subfield is not None:
+                        break
+
+                if subfield is not None:
+                    std_num = subfield.text
+
+                    # For the search, hyphen should be removed
+                    query = f'alma.standard_number={std_num.replace("-", "")}'
+
+                    req = self.sru_client.fetch_records(query, limit=500)
+                    if req.error is True:
+                        continue
+
+                    if req.are_more_results_available is True:
+                        self.warning = True
+                        self.warning_messages.append(f'{repr(req)}: not all available parent records examined')
+
+                    temp_records = [record for record in req.records
+                                    if record.error is False
+                                    and record.mms_id != self.mms_id
+                                    and std_num in record.get_standard_numbers()
+                                    and len([other_sys_id for other_sys_id in record.get_035_fields()
+                                             if other_sys_id.startswith('(CKB)')]) == 0]
+
+                    records.update(temp_records)
+
+                    if len(temp_records) > 0:
+                        fields_related_records.append({'parent_MMS_ID': f'{temp_records[0].mms_id}',
+                                                       'field': f'{field}${subfield_code}',
+                                                       'content': std_num})
+
+                # In subfield "w" are system numbers
+                subfield = xml_field.find('./m:subfield[@code="w"]', namespaces=SruClient.nsmap)
+                if subfield is not None:
+                    sys_num = subfield.text
+
+                    if re.match(r'^99\d{5,}$', sys_num):
+                        query = f'alma.mms_id={sys_num}'
+                    else:
+                        query = f'alma.other_system_number_active_035=={sys_num}' if '-' in sys_num or '_' in sys_num \
+                            else f'alma.other_system_number_active_035={sys_num}'
+
+                    req = self.sru_client.fetch_records(query, limit=500)
+                    if req.error is True:
+                        continue
+
+                    if req.are_more_results_available is True:
+                        self.warning = True
+                        self.warning_messages.append(f'{repr(req)}: not all available parent records examined')
+
+                    temp_records = [record for record in req.records
+                                    if record.error is False
+                                    and record.mms_id != self.mms_id
+                                    and (record.mms_id == sys_num
+                                         or sys_num in record.get_035_fields())
+                                    and len([other_sys_id for other_sys_id in record.get_035_fields()
+                                             if other_sys_id.startswith('(CKB)')]) == 0
+                                    ]
+
+                    if re.match(r'^99\d{5,}$', sys_num) and self.nz_sru_client is not None:
+                        req_nz = self.nz_sru_client.fetch_records(query, limit=500)
+                        if req_nz.error is True:
+                            continue
+
+                        temp_records += [record for record in req_nz.records
+                                        if record.error is False
+                                        and record.mms_id != self.mms_id
+                                        and (record.mms_id == sys_num
+                                             or sys_num in record.get_035_fields())
+                                        and len([other_sys_id for other_sys_id in record.get_035_fields()
+                                                 if other_sys_id.startswith('(CKB)')]) == 0]
+
+                    records.update(temp_records)
+
+                    if len(temp_records) > 0:
+                        fields_related_records.append({'parent_MMS_ID': f'{temp_records[0].mms_id}',
+                                                       'field': f'{field}$w',
+                                                       'content': sys_num})
+
+        self._parent_rec = {'MMS_ID': self.mms_id,
+                            'related_records_found': len(records) > 0,
+                            'number_of_rel_recs': len(records),
+                            'related_records': records,
+                            'fields_related_records': fields_related_records,
+                            }
+        return self._parent_rec

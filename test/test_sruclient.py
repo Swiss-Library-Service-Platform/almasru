@@ -1,4 +1,4 @@
-from almasru.client import SruClient, SruRecord, SruRequest
+from almasru.client import SruClient, SruRecord, SruRequest, IzSruRecord
 from almasru import config_log
 import unittest
 import shutil
@@ -165,6 +165,110 @@ class TestSruClient(unittest.TestCase):
         self.assertFalse(req.error, 'not able to fetch SRU data')
 
         self.assertEqual(len(req.records), 1, f'should be one record found, found: {len(req.records)}')
+
+    def test_multiple_clients(self):
+        r1 = SruRecord('990009063790108281', base_url='https://swisscovery.slsp.ch/view/sru/41SLSP_NETWORK')
+        self.assertTrue(r1.error, 'Record should be in error')
+
+        r2 = SruRecord('990009063790108281', base_url='https://swisscovery.slsp.ch/view/sru/41SLSP_ABN')
+        self.assertFalse(r2.error, 'Record should be ok')
+
+        r3 = SruRecord('991159842549705501', base_url='https://swisscovery.slsp.ch/view/sru/41SLSP_NETWORK')
+        self.assertFalse(r3.error, 'Record should be ok')
+
+        r4 = SruRecord('991159842549705501')
+        self.assertFalse(r4.error, 'Record should be ok')
+
+        r5 = SruRecord('990009063790108281')
+        self.assertTrue(r5.error, 'Record should be in error')
+
+    def test_iz_get_inventory(self):
+        r = IzSruRecord('9963486250105504', base_url='https://swisscovery.slsp.ch/view/sru/41SLSP_UBS')
+        holdings_id = set([i['holding'] for i in r.get_inventory_info()])
+        self.assertEqual(holdings_id,
+                         {'22314215800005504', '22314215780005504'},
+                         'Holdings IDs should be 22314215800005504 and 22314215780005504')
+
+    def test_iz_get_035_field(self):
+        r = IzSruRecord('9963486250105504', base_url='https://swisscovery.slsp.ch/view/sru/41SLSP_UBS')
+        fields035 = r.get_035_fields()
+        self.assertIn('991125596919705501', fields035, '991125596919705501 should be among 035 to check')
+
+    def test_IZ_is_removable_1(self):
+        r = IzSruRecord('9963486250105504', base_url='https://swisscovery.slsp.ch/view/sru/41SLSP_UBS')
+        is_removable, msg = r.is_removable()
+        self.assertFalse(is_removable, 'record has inventory and is not removable')
+        self.assertEqual(msg, 'Record has inventory in the IZ', 'message should be: ""')
+
+    def test_IZ_is_removable_2(self):
+        r = IzSruRecord('9914811354101791', base_url='https://eu03.alma.exlibrisgroup.com/view/sru/41BIG_INST',
+                        nz_url='https://swisscovery.slsp.ch/view/sru/41SLSP_NETWORK')
+        self.assertFalse(r.is_removable()[0], '9914811354101791 has inventory and cannot be removed')
+
+    def test_IZ_is_removable_3(self):
+
+        # Test series
+        r = IzSruRecord('990058695800205516',
+                        base_url='https://eu03.alma.exlibrisgroup.com/view/sru/41SLSP_EPF',
+                        nz_url='https://swisscovery.slsp.ch/view/sru/41SLSP_NETWORK')
+        self.assertFalse(r.is_removable()[0],
+                         '990058695800205516 has children with inventory and cannot be removed')
+
+        self.assertEqual(r.is_removable()[1], 'Child record has inventory',
+                         '990058695800205516 has children with inventory and cannot be removed')
+
+    def test_IZ_is_removable_4(self):
+
+        # Test analytical record
+        r = IzSruRecord('990065787410205516',
+                        base_url='https://eu03.alma.exlibrisgroup.com/view/sru/41SLSP_EPF',
+                        nz_url='https://swisscovery.slsp.ch/view/sru/41SLSP_NETWORK')
+
+        self.assertFalse(r.is_removable()[0],
+                         '990065787410205516 has parent with inventory and cannot be removed')
+
+    def test_IZ_nz_sru_client(self):
+        r = IzSruRecord('9963486250105504',
+                        base_url='https://swisscovery.slsp.ch/view/sru/41SLSP_UBS',
+                        nz_url='https://swisscovery.slsp.ch/view/sru/41SLSP_NETWORK')
+        self.assertEqual(r.nz_sru_client.base_url,
+                         'https://swisscovery.slsp.ch/view/sru/41SLSP_NETWORK',
+                         'Url is not related to network')
+        self.assertEqual(r.sru_client.base_url,
+                         'https://swisscovery.slsp.ch/view/sru/41SLSP_UBS',
+                         'Url is not related to UBS')
+
+    def test_get_IzSruRecord_with_get_child_rec_sys_num(self):
+        r = IzSruRecord('990001009520108281',
+                        base_url='https://swisscovery.slsp.ch/view/sru/41SLSP_ABN',
+                        nz_url='https://swisscovery.slsp.ch/view/sru/41SLSP_NETWORK')
+        related_records = r.get_child_rec_sys_num()
+        rec = list(related_records['related_records'])[0]
+        self.assertEqual(type(rec).__name__, 'IzSruRecord', 'Type of record should be IzSruRecord')
+
+    def test_get_parent_IZ_rec(self):
+        r = IzSruRecord('990003537470108281', base_url='https://swisscovery.slsp.ch/view/sru/41SLSP_ABN',
+                        nz_url='https://swisscovery.slsp.ch/view/sru/41SLSP_NETWORK')
+        parents = r.get_parent_rec()
+        self.assertEqual(type(list(parents['related_records'])[0]).__name__,
+                         'SruRecord',
+                         'Type must be SruRecord')
+
+        r = IzSruRecord('9972692445905504', base_url='https://swisscovery.slsp.ch/view/sru/41SLSP_UBS',
+                        nz_url='https://swisscovery.slsp.ch/view/sru/41SLSP_NETWORK')
+        parents = r.get_parent_rec()
+        self.assertEqual(type(list(parents['related_records'])[0]).__name__,
+                         'IzSruRecord',
+                         'Type must be SruRecord')
+
+        self.assertEqual(list(parents['related_records'])[0].mms_id,
+                         '9958366340105504',
+                         'MMS ID must be "9958366340105504"')
+
+    def test_get_nz_mms_id(self):
+        r_nz = SruRecord('991120755789705501', base_url='https://swisscovery.slsp.ch/view/sru/41SLSP_NETWORK')
+        r_iz = r_nz.get_iz_record('https://swisscovery.slsp.ch/view/sru/41SLSP_ABN')
+        self.assertEqual(r_iz.get_nz_mms_id(), '991120755789705501')
 
 
 if __name__ == '__main__':

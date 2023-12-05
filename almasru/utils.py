@@ -137,7 +137,7 @@ def check_removable_records(mms_ids: List[str], filepath: Optional[str] = None) 
             records += rec.get_child_removable_candidate_rec()
             records += rec.get_parent_removable_candidate_rec()
 
-        if is_removable[1] == 'Record used in other IZ':
+        if is_removable[1] == 'Record used in at least one IZ':
             # No need to check parents if record has inventory
             children = []
             parents = []
