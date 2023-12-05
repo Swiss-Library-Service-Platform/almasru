@@ -1,2 +1,2 @@
-__version__ = '1.2.17'
-commit_message = f'Minor change in documentation'
+__version__ = '2.0.0'
+commit_message = f'Add IzSruRecord class to handle IZ records'
