@@ -329,6 +329,48 @@ class SruRecord:
             logging.critical('Base url for SRU server not defined')
             exit()
 
+    def _fetch_parents_by_std_number(self, xml_field: etree.Element) -> List['SruRecord']:
+        """Fetch parents records by standard number"""
+        # In subfield "x" are ISSN and ISBN
+        for subfield_code in ['x', 'z']:
+            subfield = xml_field.find(f'./m:subfield[@code="{subfield_code}"]', namespaces=SruClient.nsmap)
+            if subfield is not None:
+                break
+
+        if subfield is None:
+            return []
+
+        std_num = subfield.text
+
+        # For the search, hyphen should be removed
+        std_num_cleaned = std_num.replace('-', '')
+
+        # For the search, hyphen should be removed
+        if len(std_num_cleaned) == 8:
+            # Number is probably an ISSN
+            query = f'alma.issn={std_num_cleaned}'
+        elif len(std_num_cleaned) in [10, 13]:
+            # Number is probably an ISBN
+            query = f'alma.isbn={std_num_cleaned}'
+        else:
+            # Type of number unknown
+            query = f'alma.standard_number={std_num_cleaned}'
+
+        req = self.sru_client.fetch_records(query, limit=500)
+        if req.error is True:
+            return []
+
+        if req.are_more_results_available is True:
+            self.warning = True
+            self.warning_messages.append(f'{repr(req)}: not all available parent records examined')
+
+        temp_records = [record for record in req.records
+                        if record.error is False
+                        and record.mms_id != self.mms_id
+                        and std_num in record.get_standard_numbers()
+                        and len([other_sys_id for other_sys_id in record.get_035_fields()
+                                 if other_sys_id.startswith('(CKB)')]) == 0]
+        return temp_records
     @check_error
     def get_mms_id(self) -> Optional[str]:
         """get_mms_id(self) -> Optional[str]
@@ -669,7 +711,18 @@ class SruRecord:
                     std_num = subfield.text
 
                     # For the search, hyphen should be removed
-                    query = f'alma.standard_number={std_num.replace("-", "")}'
+                    std_num_cleaned = std_num.replace('-', '')
+
+                    # For the search, hyphen should be removed
+                    if len(std_num_cleaned) == 8:
+                        # Number is probably an ISSN
+                        query = f'alma.issn={std_num_cleaned}'
+                    elif len(std_num_cleaned) in [10, 13]:
+                        # Number is probably an ISBN
+                        query = f'alma.isbn={std_num_cleaned}'
+                    else:
+                        # Type of number unknown
+                        query = f'alma.standard_number={std_num_cleaned}'
 
                     req = self.sru_client.fetch_records(query, limit=500)
                     if req.error is True:
@@ -1171,7 +1224,18 @@ class IzSruRecord(SruRecord):
                     std_num = subfield.text
 
                     # For the search, hyphen should be removed
-                    query = f'alma.standard_number={std_num.replace("-", "")}'
+                    std_num_cleaned = std_num.replace('-', '')
+
+                    # For the search, hyphen should be removed
+                    if len(std_num_cleaned) == 8:
+                        # Number is probably an ISSN
+                        query = f'alma.issn={std_num_cleaned}'
+                    elif len(std_num_cleaned) in [10, 13]:
+                        # Number is probably an ISBN
+                        query = f'alma.isbn={std_num_cleaned}'
+                    else:
+                        # Type of number unknown
+                        query = f'alma.standard_number={std_num_cleaned}'
 
                     req = self.sru_client.fetch_records(query, limit=500)
                     if req.error is True:
@@ -1223,6 +1287,7 @@ class IzSruRecord(SruRecord):
                                              if other_sys_id.startswith('(CKB)')]) == 0
                                     ]
 
+                    # If no record found in the IZ, try in the NZ when mms_id is provided
                     if re.match(r'^99\d{5,}$', sys_num) and self.nz_sru_client is not None:
                         req_nz = self.nz_sru_client.fetch_records(query, limit=500)
                         if req_nz.error is True:

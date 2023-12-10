@@ -159,6 +159,7 @@ def check_removable_records(mms_ids: List[str], filepath: Optional[str] = None) 
         # Get list of mms_id to ignore when checking for existing child analytical records
         removable_rec_mms_ids = df.loc[df.removable].index.values
 
+    # Add a column with boolean indicating which mms_id were in the starting list of mms_id to check
     df['additional_mms_id'] = ~df.index.isin(mms_ids)
 
     # Check the children, if some links exist that will be broken if the record is removed.
