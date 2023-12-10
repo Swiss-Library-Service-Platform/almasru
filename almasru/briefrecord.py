@@ -43,7 +43,7 @@ class BriefRec:
             self.data = self._get_bib_info()
         else:
             self.error = True
-            self.error.append(f'Wrong type of data provided: {type(rec)}')
+            self.error_messages.append(f'Wrong type of data provided: {type(rec)}')
             logging.error(f'BriefRec: wrong type of data provided: {type(rec)}')
 
     def __str__(self) -> str:
