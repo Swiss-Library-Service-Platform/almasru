@@ -52,12 +52,12 @@ class SruRequest:
         return self.query == other.query and self.base_url == other.base_url
 
     def __repr__(self) -> str:
-        if self.is_iz_request is False:
-            return (f"{self.__class__.__name__}('{self.query}', limit={self.limit}, "
-                    f"base_url='{self.base_url}')")
-        else:
+        if self.is_iz_request is True:
             return (f"{self.__class__.__name__}('{self.query}', limit={self.limit}, "
                     f"base_url='{self.base_url}', iz_request=True)")
+        else:
+            return (f"{self.__class__.__name__}('{self.query}', limit={self.limit}, "
+                    f"base_url='{self.base_url}')")
 
     def _get_query_path(self) -> str:
         return f'{self.base_url}__{self.query}__{self.limit}'
@@ -147,11 +147,11 @@ class SruRequest:
             if rec_number > self.limit:
                 logging.warning(f'{repr(self)}: number of available results exceed the limit provided')
                 self.are_more_results_available = True
-            if self.is_iz_request is False:
-                new_records = [SruRecord(xml=record, base_url=self.base_url) for record
+            if self.is_iz_request is True:
+                new_records = [IzSruRecord(xml=record, base_url=self.base_url) for record
                                in xml.findall('.//m:record', namespaces=SruClient.nsmap)]
             else:
-                new_records = [IzSruRecord(xml=record, base_url=self.base_url) for record
+                new_records = [SruRecord(xml=record, base_url=self.base_url) for record
                                in xml.findall('.//m:record', namespaces=SruClient.nsmap)]
 
             if len(new_records) == 0:
@@ -1014,6 +1014,7 @@ class SruRecord:
 
         with open(f'./records/rec_{self.mms_id}.xml', 'w') as f:
             f.write(str(self))
+
     def get_iz_record(self, server_url: str) -> Optional['IzSruRecord']:
         """get_iz_record(self, server_url: str) -> Optional['IzSruRecord']
         Return :class:`almasru.client.IzSruRecord` from provided server url
