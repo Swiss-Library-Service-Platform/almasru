@@ -74,6 +74,31 @@ class TestDedup(unittest.TestCase):
         self.assertGreater(score, 0.5, 'Score should be above 0.5 with minor changes')
         self.assertLess(score, 0.99, 'Score should be below 0.7 with minor changes')
 
+    def test_evaluate_parents_4(self):
+        mms_id1 = '991004153419705501'
+        rec1 = SruRecord(mms_id1)
+        brief_rec1 = BriefRec(rec1)
+        mms_id2 = '991152762959705501'
+        rec2 = SruRecord(mms_id2)
+        brief_rec2 = BriefRec(rec2)
+
+        score1 = dedup.evaluate_parents(brief_rec1.data['parent'], brief_rec2.data['parent'])
+        self.assertGreater(score1, 0.4, 'Score should be above 0.5 with minor changes')
+        self.assertLess(score1, 0.99, 'Score should be below 0.7 with minor changes')
+
+        mms_id1 = '991004153419705501'
+        rec1 = SruRecord(mms_id1)
+        brief_rec1 = BriefRec(rec1)
+        mms_id2 = '991152762959705501'
+        rec2 = SruRecord(mms_id2)
+        brief_rec2 = BriefRec(rec2)
+
+        brief_rec2.data['parent']['number'] = '15/14'
+        brief_rec1.data['parent']['number'] = '15/14'
+
+        score2 = dedup.evaluate_parents(brief_rec1.data['parent'], brief_rec2.data['parent'])
+        self.assertGreater(score2, score1, 'With same number key, the result should be higher')
+
     def test_evaluate_similarity(self):
         mms_id = '991159842549705501'
         rec = SruRecord(mms_id)

@@ -6,6 +6,7 @@ from Levenshtein import distance
 import itertools
 from sklearn.neural_network import MLPClassifier
 from copy import deepcopy
+from .briefrecord import BriefRecFactory
 
 from typing import Callable, List, Tuple, Dict, Any, Optional
 
@@ -353,7 +354,8 @@ def evaluate_parents(parent1: Dict, parent2: Dict) -> float:
         score_identifiers = evaluate_identifiers([parent1['isbn']], [parent2['isbn']])
 
     if 'number' in parent1 and 'number' in parent2:
-        score_no = int(parent1['number'] == parent2['number'])
+        score_no = int(BriefRecFactory.normalize_extent(parent1['number']) ==
+                       BriefRecFactory.normalize_extent(parent2['number']))
 
     if 'year' in parent1 and 'year' in parent2:
         score_year = int(parent1['year'] == parent2['year'])
@@ -362,7 +364,7 @@ def evaluate_parents(parent1: Dict, parent2: Dict) -> float:
         if 'parts' not in p:
             parts = []
             if 'number' in p:
-                parts.append(p['number'])
+                parts += BriefRecFactory.normalize_extent(p['number'])
             if 'year' in p:
                 parts.append(p['year'])
             if len(parts) > 0:

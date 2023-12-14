@@ -508,18 +508,17 @@ class BriefRecFactory:
                     # Get year information if available. In Alma year is prefixed with "yr:<year>"
                     year = BriefRecFactory.extract_year(txt)
                     if year is not None and (txt.startswith('yr:') is True or 'year' not in parent_information):
+                        # if year key is not populated, populate it with available data
                         parent_information['year'] = year
 
                     # Get number information. In Alma this information is prefixed with "nr:<number>"
                     if txt.startswith('no:'):
-                        number = txt[3:]
-                        if re.match(r'\d+', number):
-                            parent_information['number'] = int(number)
+                        parent_information['number'] = txt[3:]
 
-                    if not(txt.startswith('yr:') or txt.startswith('no:')):
+                    if not(txt.startswith('yr:')) and not(txt.startswith('no:')):
                         parts = BriefRecFactory.normalize_extent(txt)
                         if 'parts' not in parent_information or len(parts) > len(parent_information['parts']):
-                            parent_information['parts'] = BriefRecFactory.normalize_extent(txt)
+                            parent_information['parts'] = parts
 
         if len(parent_information) > 0:
             return parent_information
