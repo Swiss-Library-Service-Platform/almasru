@@ -35,6 +35,45 @@ class TestDedup(unittest.TestCase):
                            0.6,
                            'Similarity must be less than 0.6')
 
+    def test_evaluate_parents(self):
+        mms_id = '991171637529805501'
+        rec = SruRecord(mms_id)
+        brief_rec = BriefRec(rec)
+
+        score = dedup.evaluate_parents(brief_rec.data['parent'], brief_rec.data['parent'])
+        self.assertEqual(score, 1, 'Score should be 1 for parent when comparing same record')
+
+        mms_id = '991159842549705501'
+        rec = SruRecord(mms_id)
+        brief_rec = BriefRec(rec)
+        score = dedup.evaluate_parents(brief_rec.data['parent'], brief_rec.data['parent'])
+        self.assertTrue(pd.isna(score), 'Score should be np.nan for records parent when comparing same record')
+
+    def test_evaluate_parents_2(self):
+        mms_id = '991171637529805501'
+        rec = SruRecord(mms_id)
+        brief_rec1 = BriefRec(rec)
+        brief_rec2 = BriefRec(rec)
+
+        brief_rec1.data['parent']['parts'] = brief_rec1.data['parent']['parts'][:1]
+        del brief_rec1.data['parent']['year']
+        score = dedup.evaluate_parents(brief_rec1.data['parent'], brief_rec2.data['parent'])
+        self.assertGreater(score, 0.3, 'Score should be above 0.3 with minor changes')
+        self.assertLess(score, 0.99, 'Score should be below 0.7 with minor changes')
+
+    def test_evaluate_parents_3(self):
+        mms_id = '991171637529805501'
+        rec = SruRecord(mms_id)
+        brief_rec1 = BriefRec(rec)
+        brief_rec2 = BriefRec(rec)
+
+        brief_rec1.data['parent']['parts'] = brief_rec1.data['parent']['parts'][:2]
+        del brief_rec1.data['parent']['year']
+        brief_rec1.data['parent']['title'] = brief_rec1.data['parent']['title'] + ' publication'
+        score = dedup.evaluate_parents(brief_rec1.data['parent'], brief_rec2.data['parent'])
+        self.assertGreater(score, 0.5, 'Score should be above 0.5 with minor changes')
+        self.assertLess(score, 0.99, 'Score should be below 0.7 with minor changes')
+
     def test_evaluate_similarity(self):
         mms_id = '991159842549705501'
         rec = SruRecord(mms_id)

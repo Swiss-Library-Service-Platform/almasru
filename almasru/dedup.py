@@ -5,6 +5,7 @@ import re
 from Levenshtein import distance
 import itertools
 from sklearn.neural_network import MLPClassifier
+from copy import deepcopy
 
 from typing import Callable, List, Tuple, Dict, Any, Optional
 
@@ -319,6 +320,86 @@ def evaluate_format(format1: str, format2: str) -> float:
 
 
 @handling_missing_values
+def evaluate_parents(parent1: Dict, parent2: Dict) -> float:
+    """evaluate_parent(parent1: List[str], parent2: List[str]) -> float
+    Evaluate similarity based on the link to the parent
+
+    Keys of the parent dictionary:
+    - title: title of the parent
+    - issn: content of $x
+    - isbn: content of $z
+    - number: content of $g no:<content>
+    - year: content of $g yr:<content> or first 4 digits numbers in a $g
+    - parts: longest list of numbers in a $g
+
+    :param parent1: dictionary with parent information
+    :param parent2: dictionary with parent information
+
+    :return: similarity score between two parents
+    """
+
+    score_title = 0
+    score_identifiers = None
+    score_year = None
+    score_no = None
+    score_parts = None
+
+    if 'title' in parent1 and 'title' in parent2:
+        score_title = evaluate_texts(parent1['title'], parent2['title'])
+
+    if 'issn' in parent1 and 'issn' in parent2:
+        score_identifiers = evaluate_identifiers([parent1['issn']], [parent2['issn']])
+    elif 'isbn' in parent1 and 'isbn' in parent2:
+        score_identifiers = evaluate_identifiers([parent1['isbn']], [parent2['isbn']])
+
+    if 'number' in parent1 and 'number' in parent2:
+        score_no = int(parent1['number'] == parent2['number'])
+
+    if 'year' in parent1 and 'year' in parent2:
+        score_year = int(parent1['year'] == parent2['year'])
+
+    for p in [parent1, parent2]:
+        if 'parts' not in p:
+            parts = []
+            if 'number' in p:
+                parts.append(p['number'])
+            if 'year' in p:
+                parts.append(p['year'])
+            if len(parts) > 0:
+                p['parts'] = parts
+
+    parent1 = deepcopy(parent1)
+    parent2 = deepcopy(parent2)
+    if 'parts' in parent1 and 'parts' in parent2:
+        initial_nb = sum([len(parent1['parts']), len(parent2['parts'])])
+        to_delete = []
+        for e in parent1['parts']:
+            if e in parent2['parts']:
+                to_delete.append(e)
+                parent2['parts'].remove(e)
+        for e in to_delete:
+            parent1['parts'].remove(e)
+
+        to_delete = []
+        for e in parent2['parts']:
+            if e in parent1['parts']:
+                to_delete.append(e)
+                parent1['parts'].remove(e)
+        for e in to_delete:
+            parent2['parts'].remove(e)
+
+        final_nb = sum([len(parent1['parts']), len(parent2['parts'])])
+        score_parts = 1 - final_nb / initial_nb
+
+    elif 'parts' in parent1 or 'parts' in parent2:
+        # Case if part information is only in one record available
+        score_parts = 0
+
+    return score_title * np.mean([s for s in [score_title, score_no, score_year, score_identifiers, score_parts]
+                                  if s is not None])
+
+
+@handling_missing_values
 def evaluate_completeness(bib1: Dict[str, Any], bib2: Dict[str, Any]) -> float:
     """evaluate_completeness(bib1: Dict[str, Any], bib2: Dict[str, Any]) -> float
 
@@ -363,6 +444,7 @@ def evaluate_similarity(bib1: Dict[str, Any], bib2: Dict[str, Any]) -> Dict[str,
         'isbns': evaluate_identifiers(bib1['isbns'], bib2['isbns']),
         'issns': evaluate_identifiers(bib1['issns'], bib2['issns']),
         'other_std_num': evaluate_identifiers(bib1['other_std_num'], bib2['other_std_num']),
+        'parent': evaluate_parents(bib1['parent'], bib2['parent']),
         'sysnums': evaluate_sysnums(bib1['sysnums'], bib2['sysnums']),
         'same_fields_existing': evaluate_completeness(bib1, bib2)
     }

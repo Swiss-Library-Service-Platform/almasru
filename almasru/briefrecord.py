@@ -1,13 +1,9 @@
 from lxml import etree
 import logging
-import requests
-from typing import Dict, List, Tuple, Optional, Callable, Set, AnyStr, Literal, Union, Set
-import os
+from typing import Dict, List, Optional, Union
 import re
-import hashlib
 import json
 from .utils import roman_to_int, remove_ns
-from .common import check_error
 from .client import SruRecord
 
 
@@ -111,6 +107,45 @@ class BriefRecFactory:
         return extent_list
 
     @staticmethod
+    def normalize_isbn(isbn: str) -> Optional[str]:
+        """Suppress hyphen and textual information of the provided isbn
+
+        :param isbn: raw string containing isbn
+
+        :return: string containing normalized isbn
+        """
+        # Remove hyphens and all textual information about isbn
+        m = re.search(r'\d{8,}[\dxX]', isbn.replace('-', ''))
+        if m is not None:
+            return m.group()
+
+    @staticmethod
+    def normalize_issn(issn: str) -> Optional[str]:
+        """Suppress hyphen and textual information of the provided issn
+
+        :param issn: raw string containing issn
+
+        :return: string containing normalized issn
+        """
+        # Remove hyphens and all textual information about isbn
+        m = re.search(r'\d{7}[\dxX]', issn.replace('-', ''))
+        if m is not None:
+            return m.group()
+
+    @staticmethod
+    def extract_year(txt: str) -> Optional[int]:
+        """extract_year(str) -> Optional[int]
+        Extract a substring of 4 digits
+
+        :param txt: string to parse to get year
+
+        :return: int value with the found year or None if no year available
+        """
+        m = re.match(r'\b\d{4}\b', txt)
+        if m is not None:
+            return int(m.group())
+
+    @staticmethod
     def get_rec_id(bib: etree.Element) -> Optional[str]:
         """get_rec_id(bib: etree.Element) -> Optional[str]
         get_rec_id(bib) -> Optional[str]
@@ -139,12 +174,10 @@ class BriefRecFactory:
         raw_isbns = set([field.text for field in fields])
         isbns = set()
 
-        for isbn in raw_isbns:
-
-            # Remove hyphens and all textual information about isbn
-            m = re.search(r'\d{8,}[\dxX]', isbn.replace('-', ''))
-            if m is not None:
-                isbns.add(m.group())
+        for raw_isbn in raw_isbns:
+            isbn = BriefRecFactory.normalize_isbn(raw_isbn)
+            if isbn is not None:
+                isbns.add(isbn)
         if len(isbns) == 0:
             return None
         return list(isbns)
@@ -162,11 +195,10 @@ class BriefRecFactory:
         raw_issns = set([field.text for field in fields])
         issns = set()
 
-        for isbn in raw_issns:
-            # Remove hyphens and all textual information about issn
-            m = re.search(r'\d{7}[\dxX]', isbn.replace('-', ''))
-            if m is not None:
-                issns.add(m.group())
+        for raw_issn in raw_issns:
+            issn = BriefRecFactory.normalize_issn(raw_issn)
+            if issn is not None:
+                issns.add(issn)
         if len(issns) == 0:
             return None
         return list(issns)
@@ -182,7 +214,6 @@ class BriefRecFactory:
         """
         fields = bib.findall('.//datafield[@tag="024"]/subfield[@code="a"]')
         raw_std_nums = set([field.text for field in fields])
-        std_nums = set()
 
         if len(raw_std_nums) == 0:
             return None
@@ -279,10 +310,7 @@ class BriefRecFactory:
         if controlfield008 is None:
             return None
 
-        date_1 = controlfield008.text[7:11]
-        m = re.match(r'\d{4}', date_1)
-        if m is not None:
-            return int(m.group())
+        return BriefRecFactory.extract_year(controlfield008.text[7:11])
 
     @staticmethod
     def get_date_2(bib: etree.Element) -> Optional[int]:
@@ -297,10 +325,7 @@ class BriefRecFactory:
         if controlfield008 is None:
             return None
 
-        date_2 = controlfield008.text[12:15]
-        m = re.match(r'\d{4}', date_2)
-        if m is not None:
-            return int(m.group())
+        return BriefRecFactory.extract_year(controlfield008.text[12:15])
 
     @staticmethod
     def get_33x_summary(bib: etree.Element) -> Optional[str]:
@@ -378,7 +403,7 @@ class BriefRecFactory:
             return fields
 
     @staticmethod
-    def get_extent(bib: etree.Element):
+    def get_extent(bib: etree.Element) -> Optional[str]:
         """get_extent(bib: etree.Element)
         Return extent from field 300$a
 
@@ -393,8 +418,8 @@ class BriefRecFactory:
         return extent
 
     @staticmethod
-    def get_publishers(bib: etree.Element):
-        """get_publishers(bib: etree.Element)
+    def get_publishers(bib: etree.Element) -> Optional[List[str]]:
+        """get_publishers(bib: etree.Element) -> Optional[List[str]]
         Return publishers from field 264$b
 
         :param bib: :class:`etree.Element`
@@ -408,11 +433,12 @@ class BriefRecFactory:
         return publishers
 
     @staticmethod
-    def get_series(bib: etree.Element):
-        """get_series(bib: etree.Element)
+    def get_series(bib: etree.Element) -> Optional[List[str]]:
+        """get_series(bib: etree.Element) -> Optional[List[str]]
         Return series title from field 490$a
 
         :param bib: :class:`etree.Element`
+
         :return: list of titles of related series or None if not found
         """
         series_fields = bib.findall('.//datafield[@tag="490"]/subfield[@code="a"]')
@@ -423,8 +449,8 @@ class BriefRecFactory:
         return series
 
     @staticmethod
-    def get_editions(bib: etree.Element):
-        """get_editions(bib: etree.Element)
+    def get_editions(bib: etree.Element) -> Optional[List[str]]:
+        """get_editions(bib: etree.Element) -> Optional[List[str]]
         Returns a list of editions (fields 250$a and 250$b)
 
         :param bib: :class:`etree.Element`
@@ -443,6 +469,62 @@ class BriefRecFactory:
                     editions.append(edition_field.text)
 
         return editions
+
+    @staticmethod
+    def get_parent(bib: etree.Element) -> Optional[Dict]:
+        """get_parent(bib: etree.Element) -> Optional[List[str]]
+        Return a dictionary with information found in field 773
+
+        Keys of the parent dictionary:
+        - title: title of the parent
+        - issn: content of $x
+        - isbn: content of $z
+        - number: content of $g no:<content>
+        - year: content of $g yr:<content> or first 4 digits numbers in a $g
+        - parts: longest list of numbers in a $g
+
+        :param bib: :class:`etree.Element`
+
+        :return: list of parent information or None if not found
+        """
+        f773 = bib.find('.//datafield[@tag="773"]')
+
+        # No 773 => no parent record
+        if f773 is None:
+            return None
+
+        parent_information = dict()
+        for code in ['g', 't', 'x', 'z']:
+            for subfield in f773.findall(f'subfield[@code="{code}"]'):
+                if code == 't':
+                    parent_information['title'] = BriefRecFactory.normalize_title(subfield.text)
+                elif code == 'x':
+                    parent_information['issn'] = BriefRecFactory.normalize_issn(subfield.text)
+                elif code == 'z':
+                    parent_information['isbn'] = BriefRecFactory.normalize_isbn(subfield.text)
+                elif code == 'g':
+                    txt = subfield.text
+
+                    # Get year information if available. In Alma year is prefixed with "yr:<year>"
+                    year = BriefRecFactory.extract_year(txt)
+                    if year is not None and (txt.startswith('yr:') is True or 'year' not in parent_information):
+                        parent_information['year'] = year
+
+                    # Get number information. In Alma this information is prefixed with "nr:<number>"
+                    if txt.startswith('no:'):
+                        number = txt[3:]
+                        if re.match(r'\d+', number):
+                            parent_information['number'] = int(number)
+
+                    if not(txt.startswith('yr:') or txt.startswith('no:')):
+                        parts = BriefRecFactory.normalize_extent(txt)
+                        if 'parts' not in parent_information or len(parts) > len(parent_information['parts']):
+                            parent_information['parts'] = BriefRecFactory.normalize_extent(txt)
+
+        if len(parent_information) > 0:
+            return parent_information
+        else:
+            return None
 
     @staticmethod
     def get_bib_info(bib: etree.Element):
@@ -467,5 +549,6 @@ class BriefRecFactory:
                     'isbns': BriefRecFactory.get_isbns(bib),
                     'issns': BriefRecFactory.get_issns(bib),
                     'other_std_num': BriefRecFactory.get_other_std_num(bib),
+                    'parent': BriefRecFactory.get_parent(bib),
                     'sysnums': BriefRecFactory.get_sysnums(bib)}
         return bib_info
