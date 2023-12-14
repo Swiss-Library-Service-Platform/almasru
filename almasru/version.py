@@ -1,2 +1,2 @@
-__version__ = '2.0.3'
-commit_message = f'Default record is not IzSruRecord anymore'
+__version__ = '2.1.0'
+commit_message = f'Add field 773 for analytical analyse'
