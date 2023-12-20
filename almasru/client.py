@@ -371,6 +371,7 @@ class SruRecord:
                         and len([other_sys_id for other_sys_id in record.get_035_fields()
                                  if other_sys_id.startswith('(CKB)')]) == 0]
         return temp_records
+
     @check_error
     def get_mms_id(self) -> Optional[str]:
         """get_mms_id(self) -> Optional[str]
@@ -648,10 +649,12 @@ class SruRecord:
                         code = field.attrib['code']
                         tag = field.getparent().attrib['tag']
                         if tag in ['020', '022']:
-                            self.warning = True
-                            self.warning_messages.append(f'More than one record with same {tag}, {self.mms_id} '
-                                                         f'and {record.mms_id} are probably duplicated records')
-                        else:
+                            temp_records_duplicates.add(record)
+                            if code == 'a':
+                                self.warning = True
+                                self.warning_messages.append(f'More than one record with same {tag}, {self.mms_id} '
+                                                             f'and {record.mms_id} are probably duplicated records')
+                        elif tag not in ['020', '022']:
                             fields_related_records.append({'child_MMS_ID': record.mms_id,
                                                            'field': f'{tag}${code}',
                                                            'content': field.text})
@@ -1036,8 +1039,6 @@ class SruRecord:
         return None
 
 
-
-
 class IzSruRecord(SruRecord):
     """Class representing a single XML IZ record from SRU
 
@@ -1110,7 +1111,7 @@ class IzSruRecord(SruRecord):
         for field_ava in fields_ava:
             f = {}
             for field in fields:
-                subfield =field_ava.find(f'./m:subfield[@code="{fields[field]}"]', namespaces=SruClient.nsmap)
+                subfield = field_ava.find(f'./m:subfield[@code="{fields[field]}"]', namespaces=SruClient.nsmap)
                 if subfield is not None:
                     f[field] = subfield.text
             inventory_info.append(f)
@@ -1295,11 +1296,11 @@ class IzSruRecord(SruRecord):
                             continue
 
                         temp_records += [record for record in req_nz.records
-                                        if record.error is False
-                                        and record.mms_id != self.mms_id
-                                        and (record.mms_id == sys_num
-                                             or sys_num in record.get_035_fields())
-                                        and len([other_sys_id for other_sys_id in record.get_035_fields()
+                                         if record.error is False
+                                         and record.mms_id != self.mms_id
+                                         and (record.mms_id == sys_num
+                                              or sys_num in record.get_035_fields())
+                                         and len([other_sys_id for other_sys_id in record.get_035_fields()
                                                  if other_sys_id.startswith('(CKB)')]) == 0]
 
                     records.update(temp_records)
