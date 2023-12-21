@@ -1,2 +1,2 @@
-__version__ = '2.1.2'
-commit_message = f'Fix issue with number in 773 field'
+__version__ = '2.1.3'
+commit_message = f'Update minor issues on get_inventory method'

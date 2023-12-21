@@ -329,13 +329,36 @@ class BriefRecFactory:
 
     @staticmethod
     def get_33x_summary(bib: etree.Element) -> Optional[str]:
+        """ get_33x_summary(bib: etree.Element) -> Optional[str]
+        Get a summary of the 336, 337 and 338 fields
 
+        :param bib: :class:`etree.Element`
+
+        :return: summary of the 336, 337 and 338 fields"""
         s = '/'
         for tag in ['336', '337', '338']:
             fields = bib.findall(f'.//datafield[@tag="{tag}"]/subfield[@code="b"]')
             if len(fields) > 0:
-                s += ','.join([f.text for f in fields]) + '/'
+                s += ','.join([f.text for f in fields]) + ';'
+            else:
+                s += ' ;'
+        s = s[:-1] # remove last ; character
         return s
+
+    # @staticmethod
+    # def get_008(bib: etree.Element) -> Optional[str]:
+    #     """get_008_pos_form_item(bib: etree.Element) -> Optional[str]
+    #     Get the 008 field
+    #
+    #     :param bib: :class:`etree.Element`
+    #
+    #     :return: 008 field
+    #     """
+    #     controlfield008 = bib.find('.//controlfield[@tag="008"]')
+    #     if controlfield008 is None:
+    #         return None
+    #
+    #     return controlfield008.text
 
     @staticmethod
     def get_format(bib: etree.Element) -> Optional[str]:
