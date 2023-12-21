@@ -809,10 +809,19 @@ class SruRecord:
                                     namespaces=SruClient.nsmap)
 
         # $$a contains the IZ, $$6 contains the iz MMS ID, $$9 contains the format ("P", "E" or "D")
-        inventory_info = [{'IZ': f.find('./m:subfield[@code="a"]', namespaces=SruClient.nsmap).text,
-                           'MMS ID': f.find('./m:subfield[@code="6"]', namespaces=SruClient.nsmap).text,
-                           'format': f.find('./m:subfield[@code="9"]', namespaces=SruClient.nsmap).text}
-                          for f in fields852]
+        inventory_info = []
+        for f in fields852:
+
+            # Need to check if the subfields exist, otherwise the script will crash
+            # 852 field are not only result of holdings
+            f_iz = f.find('./m:subfield[@code="a"]', namespaces=SruClient.nsmap)
+            f_mms_id = f.find('./m:subfield[@code="6"]', namespaces=SruClient.nsmap)
+            f_format = f.find('./m:subfield[@code="9"]', namespaces=SruClient.nsmap)
+
+            if f_iz is not None and f_mms_id is not None and f_format is not None:
+                inventory_info.append({'IZ': f_iz.text,
+                                       'MMS ID': f_mms_id.text,
+                                       'format': f_format.text})
         logging.info(f'{repr(self)}: {len(inventory_info)} records in IZ found')
         return inventory_info
 
