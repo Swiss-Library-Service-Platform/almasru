@@ -37,6 +37,11 @@ class TestSruClient(unittest.TestCase):
 
         self.assertEqual(brief_rec.data['parent']['year'], 2001, 'Year should be 2001')
 
+    def test_get_format(self):
+        mms_id = '991171637529805501'
+        rec = SruRecord(mms_id)
+        brief_rec = BriefRec(rec)
+        self.assertEqual(brief_rec.data['format'], 'aa / txt;n;nc', 'Format should be "aa / txt;n;nc"')
 
 if __name__ == '__main__':
     unittest.main()

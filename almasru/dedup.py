@@ -317,7 +317,25 @@ def evaluate_format(format1: str, format2: str) -> float:
     :param format2: format to compare
 
     :return: similarity score between two formats as float"""
-    return float(format1 == format2)
+    format1 = format1.split('/')
+    format2 = format2.split('/')
+    leader1 = format1[0].strip()
+    leader2 = format2[0].strip()
+
+    # Compare leader => 0.4 max
+    score = 0.4 if leader1 == leader2 else 0
+
+    # Compare fields 33X => 0.6 max for the 3 fields
+    f33X_1 = format1[1].strip().split(';')
+    f33X_2 = format2[1].strip().split(';')
+    for i in range(len(f33X_1)):
+        if len(f33X_2) > i:
+            if f33X_1[i] == f33X_2[i]:
+                score += 0.2
+            elif f33X_1[i].strip() == '' or f33X_2[i].strip() == '':
+                score += 0.1
+
+    return score
 
 
 @handling_missing_values

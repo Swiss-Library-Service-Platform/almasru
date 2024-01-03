@@ -99,6 +99,27 @@ class TestDedup(unittest.TestCase):
         score2 = dedup.evaluate_parents(brief_rec1.data['parent'], brief_rec2.data['parent'])
         self.assertGreater(score2, score1, 'With same number key, the result should be higher')
 
+    def test_evaluate_format(self):
+        mms_id = '991159842549705501'
+        rec = SruRecord(mms_id)
+        brief_rec = BriefRec(rec)
+        mms_id2 = '991159842549705501'
+        rec2 = SruRecord(mms_id2)
+        brief_rec2 = BriefRec(rec2)
+        result = dedup.evaluate_format(brief_rec.data['format'], brief_rec2.data['format'])
+
+        self.assertEqual(result, 1.0, f'format should be the same when comparison with identical record')
+
+        mms_id = '991159842549705501'
+        rec = SruRecord(mms_id)
+        brief_rec = BriefRec(rec)
+        mms_id2 = '991159842649705501'
+        rec2 = SruRecord(mms_id2)
+        brief_rec2 = BriefRec(rec2)
+        result = dedup.evaluate_format(brief_rec.data['format'], brief_rec2.data['format'])
+        self.assertLess(result, 0.5, f'Score should be less than 0.5, returned {result}')
+        self.assertGreater(result, 0.2, f'Score should be less than 0.2, returned {result}')
+
     def test_evaluate_similarity(self):
         mms_id = '991159842549705501'
         rec = SruRecord(mms_id)

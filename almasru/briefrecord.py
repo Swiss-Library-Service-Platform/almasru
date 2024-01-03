@@ -335,7 +335,7 @@ class BriefRecFactory:
         :param bib: :class:`etree.Element`
 
         :return: summary of the 336, 337 and 338 fields"""
-        s = '/'
+        s = ''
         for tag in ['336', '337', '338']:
             fields = bib.findall(f'.//datafield[@tag="{tag}"]/subfield[@code="b"]')
             if len(fields) > 0:
@@ -370,24 +370,26 @@ class BriefRecFactory:
         :return: format of the record
         """
         f33x_summary = BriefRecFactory.get_33x_summary(bib)
-        if BriefRecFactory.get_leader_pos67(bib) == 'am':
-            return f'book {f33x_summary}'
 
-        elif BriefRecFactory.get_leader_pos67(bib) == 'aa':
-            return f'analytical {f33x_summary}'
-
-        elif BriefRecFactory.get_leader_pos67(bib) == 'as':
-            return f'series {f33x_summary}'
-
-        elif BriefRecFactory.get_leader_pos67(bib) == 'em':
-            return f'map {f33x_summary}'
-
-        elif BriefRecFactory.get_leader_pos67(bib) == 'gm':
-            return f'projected {f33x_summary}'
-
-        else:
-            logging.error(f'Unknown format: {BriefRecFactory.get_leader_pos67(bib)}')
-            return None
+        return BriefRecFactory.get_leader_pos67(bib) + ' / ' + f33x_summary
+        # if BriefRecFactory.get_leader_pos67(bib) == 'am':
+        #     return f'book {f33x_summary}'
+        #
+        # elif BriefRecFactory.get_leader_pos67(bib) == 'aa':
+        #     return f'analytical {f33x_summary}'
+        #
+        # elif BriefRecFactory.get_leader_pos67(bib) == 'as':
+        #     return f'series {f33x_summary}'
+        #
+        # elif BriefRecFactory.get_leader_pos67(bib) == 'em':
+        #     return f'map {f33x_summary}'
+        #
+        # elif BriefRecFactory.get_leader_pos67(bib) == 'gm':
+        #     return f'projected {f33x_summary}'
+        #
+        # else:
+        #     logging.error(f'Unknown format: {BriefRecFactory.get_leader_pos67(bib)}')
+        #     return None
 
     @staticmethod
     def get_creators(bib: etree.Element) -> Optional[List[str]]:
