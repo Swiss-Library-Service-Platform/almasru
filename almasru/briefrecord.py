@@ -342,7 +342,7 @@ class BriefRecFactory:
                 s += ','.join([f.text for f in fields]) + ';'
             else:
                 s += ' ;'
-        s = s[:-1] # remove last ; character
+        s = s[:-1]  # remove last ; character
         return s
 
     # @staticmethod
@@ -474,6 +474,21 @@ class BriefRecFactory:
         return series
 
     @staticmethod
+    def get_language(bib: etree.Element) -> Optional[str]:
+        """get_language(bib: etree.Element) -> Optional[str]
+        Return language from field 008
+
+        :param bib: :class:`etree.Element`
+
+        :return: language or None if not found
+        """
+        controlfield008 = bib.find('.//controlfield[@tag="008"]')
+        if controlfield008 is None:
+            return None
+
+        return controlfield008.text[35:38]
+
+    @staticmethod
     def get_editions(bib: etree.Element) -> Optional[List[str]]:
         """get_editions(bib: etree.Element) -> Optional[List[str]]
         Returns a list of editions (fields 250$a and 250$b)
@@ -563,6 +578,7 @@ class BriefRecFactory:
                     'format': BriefRecFactory.get_format(bib),
                     'title': BriefRecFactory.get_complete_title(bib),
                     'short_title': BriefRecFactory.get_title(bib),
+                    'language': BriefRecFactory.get_language(bib),
                     'editions': BriefRecFactory.get_editions(bib),
                     'creators': BriefRecFactory.get_creators(bib),
                     'corp_creators': BriefRecFactory.get_corp_creators(bib),

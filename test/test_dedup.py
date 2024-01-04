@@ -47,7 +47,7 @@ class TestDedup(unittest.TestCase):
         rec = SruRecord(mms_id)
         brief_rec = BriefRec(rec)
         score = dedup.evaluate_parents(brief_rec.data['parent'], brief_rec.data['parent'])
-        self.assertEqual(score, 1, 'Score should be 1 for parent when comparing same record (without parent)')
+        self.assertIsInstance(score, type(np.nan),'Score should be nan for parent when comparing same record (without parent)')
 
     def test_evaluate_parents_2(self):
         mms_id = '991171637529805501'

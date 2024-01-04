@@ -111,6 +111,57 @@ def evaluate_sysnums(ids1: str, ids2: str) -> float:
 
 
 @handling_missing_values
+def evaluate_language(lang1: str, lang2: str) -> float:
+    """evaluate_language(lang1: str, lang2: str) -> float
+    Return the result of the evaluation of similarity of two languages.
+
+    :param lang1: language to compare
+    :param lang2: language to compare
+
+    :return: similarity score between two languages as float
+    """
+    if lang1 == lang2:
+        return 1
+    else:
+        return 0
+
+
+def evaluate_is_analytical(format1: str, format2: str) -> float:
+    """evaluate_is_analytical(format1: str, format2: str) -> float
+    Check if records are analytical records
+
+    :param format1: format to compare
+    :param format2: format to compare
+
+    :return: 0 if no analytical, 1 if both analytical, 0.5 otherwise.
+    """
+    if format1[1] == 'a' and format2[1] == 'a':
+        return 1
+    elif format1[1] == 'a' or format2[1] == 'a':
+        return 0.5
+    else:
+        return np.nan
+
+
+def evaluate_is_series(format1: str, format2: str) -> Optional[float]:
+    """evaluate_is_series(format1: str, format2: str) -> Optional[float]
+    Check if records are series
+
+    :param format1: format to compare
+    :param format2: format to compare
+
+    :return: nan if no series, 1 if both series, 0.5 otherwise.
+    """
+
+    if format1[1] == 's' and format2[1] == 's':
+        return 1
+    elif format1[1] == 's' or format2[1] == 's':
+        return 0.5
+    else:
+        return np.nan
+
+
+@handling_missing_values
 def evaluate_extent(extent1: List[int], extent2: List[int]) -> float:
     """evaluate_extent(extent1: List[int], extent2: List[int]) -> float
     Return the result of the evaluation of similarity of two extents.
@@ -326,20 +377,21 @@ def evaluate_format(format1: str, format2: str) -> float:
     score = 0.4 if leader1 == leader2 else 0
 
     # Compare fields 33X => 0.6 max for the 3 fields
-    f33X_1 = format1[1].strip().split(';')
-    f33X_2 = format2[1].strip().split(';')
-    for i in range(len(f33X_1)):
-        if len(f33X_2) > i:
-            if f33X_1[i] == f33X_2[i]:
+    f33x_1 = format1[1].strip().split(';')
+    f33x_2 = format2[1].strip().split(';')
+    for i in range(len(f33x_1)):
+        if len(f33x_2) > i:
+            if f33x_1[i] == f33x_2[i]:
                 score += 0.2
-            elif f33X_1[i].strip() == '' or f33X_2[i].strip() == '':
+            elif f33x_1[i].strip() == '' or f33x_2[i].strip() == '':
                 score += 0.1
 
     return score
 
 
-def evaluate_parents(parent1: Optional[Dict], parent2: Optional[Dict]) -> float:
-    """evaluate_parent(parent1: List[str], parent2: List[str]) -> float
+@handling_missing_values
+def evaluate_parents(parent1: Dict, parent2: Dict) -> float:
+    """evaluate_parents(parent1: Dict, parent2: Dict) -> float
     Evaluate similarity based on the link to the parent
 
     Keys of the parent dictionary:
@@ -355,11 +407,6 @@ def evaluate_parents(parent1: Optional[Dict], parent2: Optional[Dict]) -> float:
 
     :return: similarity score between two parents
     """
-
-    if parent1 is None and parent2 is None:
-        return 1
-    elif parent1 is None or parent2 is None:
-        return 0
 
     score_title = 0
     score_identifiers = None
@@ -462,6 +509,7 @@ def evaluate_similarity(bib1: Dict[str, Any], bib2: Dict[str, Any]) -> Dict[str,
         'editions': evaluate_lists_texts(bib1['editions'], bib2['editions']),
         'creators': evaluate_lists_names(bib1['creators'], bib2['creators']),
         'corp_creators': evaluate_lists_names(bib1['corp_creators'], bib2['corp_creators']),
+        'language': evaluate_language(bib1['language'], bib2['language']),
         'date_1': evaluate_year(bib1['date_1'], bib2['date_1']),
         'date_2': evaluate_year(bib1['date_2'], bib2['date_2']),
         'publishers': evaluate_lists_texts(bib1['publishers'], bib2['publishers']),
@@ -472,7 +520,9 @@ def evaluate_similarity(bib1: Dict[str, Any], bib2: Dict[str, Any]) -> Dict[str,
         'other_std_num': evaluate_identifiers(bib1['other_std_num'], bib2['other_std_num']),
         'parent': evaluate_parents(bib1['parent'], bib2['parent']),
         'sysnums': evaluate_sysnums(bib1['sysnums'], bib2['sysnums']),
-        'same_fields_existing': evaluate_completeness(bib1, bib2)
+        'same_fields_existing': evaluate_completeness(bib1, bib2),
+        'are_analytical': evaluate_is_analytical(bib1['format'], bib2['format']),
+        'are_series': evaluate_is_series(bib1['format'], bib2['format']),
     }
     return results
 
@@ -505,6 +555,7 @@ def get_similarity_score(bib1: Dict[str, Any],
                    'editions',
                    'creators',
                    'corp_creators',
+                   'language',
                    'date_1',
                    'date_2',
                    'publishers',
@@ -515,7 +566,9 @@ def get_similarity_score(bib1: Dict[str, Any],
                    'other_std_num',
                    'parent',
                    'sysnums',
-                   'same_fields_existing']
+                   'same_fields_existing',
+                   'are_analytical',
+                   'are_series']
 
         # Prepare DataFrame to save similarity evaluations
         df = pd.DataFrame(columns=columns)
