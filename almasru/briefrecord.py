@@ -540,7 +540,8 @@ class BriefRecFactory:
                     if txt.startswith('no:'):
                         parent_information['number'] = txt[3:]
 
-                    if not(txt.startswith('yr:')) and not(txt.startswith('no:')):
+                    # No normalized parts in Alma format. Try to extract the longest list of numbers
+                    if not txt.startswith('yr:') and not txt.startswith('no:'):
                         parts = BriefRecFactory.normalize_extent(txt)
                         if 'parts' not in parent_information or len(parts) > len(parent_information['parts']):
                             parent_information['parts'] = parts

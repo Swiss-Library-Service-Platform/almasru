@@ -338,8 +338,7 @@ def evaluate_format(format1: str, format2: str) -> float:
     return score
 
 
-@handling_missing_values
-def evaluate_parents(parent1: Dict, parent2: Dict) -> float:
+def evaluate_parents(parent1: Optional[Dict], parent2: Optional[Dict]) -> float:
     """evaluate_parent(parent1: List[str], parent2: List[str]) -> float
     Evaluate similarity based on the link to the parent
 
@@ -356,6 +355,11 @@ def evaluate_parents(parent1: Dict, parent2: Dict) -> float:
 
     :return: similarity score between two parents
     """
+
+    if parent1 is None and parent2 is None:
+        return 1
+    elif parent1 is None or parent2 is None:
+        return 0
 
     score_title = 0
     score_identifiers = None
@@ -379,6 +383,8 @@ def evaluate_parents(parent1: Dict, parent2: Dict) -> float:
         score_year = int(parent1['year'] == parent2['year'])
 
     for p in [parent1, parent2]:
+
+        # Create parts field if not present => used to compare two records with parts fields
         if 'parts' not in p:
             parts = []
             if 'number' in p:
@@ -507,6 +513,7 @@ def get_similarity_score(bib1: Dict[str, Any],
                    'isbns',
                    'issns',
                    'other_std_num',
+                   'parent',
                    'sysnums',
                    'same_fields_existing']
 

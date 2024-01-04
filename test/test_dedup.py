@@ -41,13 +41,13 @@ class TestDedup(unittest.TestCase):
         brief_rec = BriefRec(rec)
 
         score = dedup.evaluate_parents(brief_rec.data['parent'], brief_rec.data['parent'])
-        self.assertEqual(score, 1, 'Score should be 1 for parent when comparing same record')
+        self.assertEqual(score, 1, 'Score should be 1 for parent when comparing same record (with parent)')
 
         mms_id = '991159842549705501'
         rec = SruRecord(mms_id)
         brief_rec = BriefRec(rec)
         score = dedup.evaluate_parents(brief_rec.data['parent'], brief_rec.data['parent'])
-        self.assertTrue(pd.isna(score), 'Score should be np.nan for records parent when comparing same record')
+        self.assertEqual(score, 1, 'Score should be 1 for parent when comparing same record (without parent)')
 
     def test_evaluate_parents_2(self):
         mms_id = '991171637529805501'

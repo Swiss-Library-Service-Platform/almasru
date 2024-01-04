@@ -1,2 +1,2 @@
-__version__ = '2.2.0'
-commit_message = f'Change evaluation of format (dedup)'
+__version__ = '2.2.1'
+commit_message = f'Change on parent evaluation (dedup)'

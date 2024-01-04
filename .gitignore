@@ -11,6 +11,7 @@
 /almasru.egg-info
 /docs/_build
 pyvenv.cfg
+.pypirc
 */__pycache__
 *.xlsx
 *.csv
