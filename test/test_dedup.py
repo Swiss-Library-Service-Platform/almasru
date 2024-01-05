@@ -99,6 +99,47 @@ class TestDedup(unittest.TestCase):
         score2 = dedup.evaluate_parents(brief_rec1.data['parent'], brief_rec2.data['parent'])
         self.assertGreater(score2, score1, 'With same number key, the result should be higher')
 
+    def test_evaluate_is_analytical(self):
+        mms_id1 = '991171637529805501'
+        rec1 = SruRecord(mms_id1)
+        brief_rec1 = BriefRec(rec1)
+
+        score = dedup.evaluate_is_analytical(brief_rec1.data['format'], brief_rec1.data['format'])
+        self.assertEqual(score, 1,
+                         'Score should be 1 for is_analytical when comparing same record (analytical)')
+
+        mms_id2 = '991159842549705501'
+        rec2 = SruRecord(mms_id2)
+        brief_rec2 = BriefRec(rec2)
+        score = dedup.evaluate_is_analytical(brief_rec2.data['format'], brief_rec2.data['format'])
+        self.assertIsInstance(score, type(np.nan),
+                              'Score should be nan for is_analytical when comparing same record (not analytical)')
+
+        score = dedup.evaluate_is_analytical(brief_rec1.data['format'], brief_rec2.data['format'])
+        self.assertEqual(score, 0.5,
+                         'Score should be 0.5 for is_analytical when comparing analytical and not analytical')
+
+    def test_evaluate_is_series(self):
+        mms_id1 = '991171637529805501'
+        rec1 = SruRecord(mms_id1)
+        brief_rec1 = BriefRec(rec1)
+
+        score = dedup.evaluate_is_series(brief_rec1.data['format'], brief_rec1.data['format'])
+        self.assertIsInstance(score, type(np.nan),
+                              'Score should be 1 for is_series when comparing same record (not series)')
+
+        mms_id2 = '991159842549705501'
+        rec2 = SruRecord(mms_id2)
+        brief_rec2 = BriefRec(rec2)
+        score = dedup.evaluate_is_series(brief_rec2.data['format'], brief_rec2.data['format'])
+        self.assertEqual(score, 1,
+                         'Score should be 1 for is_series when comparing same record (series)')
+
+        score = dedup.evaluate_is_series(brief_rec1.data['format'], brief_rec2.data['format'])
+        self.assertEqual(score, 0.5,
+                         'Score should be 0.5 for is_series when comparing series and not series')
+
+
     def test_evaluate_format(self):
         mms_id = '991159842549705501'
         rec = SruRecord(mms_id)
