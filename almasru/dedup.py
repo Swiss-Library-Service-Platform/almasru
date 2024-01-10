@@ -11,15 +11,49 @@ from .briefrecord import BriefRecFactory
 from typing import Callable, List, Tuple, Dict, Any, Optional
 
 
+def convert_to_numeric(txt: str) -> str:
+    """convert_to_numeric(str) -> str
+    Convert a text number to a numeric string.
+
+    :param txt: string to convert
+
+    :return: numeric string
+    """
+    convert_table = {'first ': '1 ',
+                     'second ': '2 ',
+                     'third ': '3 ',
+                     'fourth ': '4 ',
+                     'fifth ': '5 ',
+                     'première ': '1 ',
+                     'deuxième ': '2 ',
+                     'seconde ': '2 ',
+                     'sec. ': '2 ',
+                     'troisième ': '3 ',
+                     'quatrième ': '4 ',
+                     'erste ': '1 ',
+                     'zweite ': '2 ',
+                     'dritte ': '3 ',
+                     'vierte ': '4 '}
+    txt = txt.lower()
+    for k in convert_table:
+        txt = txt.replace(k, convert_table[k])
+
+    return txt
+
+
 def handling_missing_values(fn: Callable) -> Callable:
     """Decorator to handle missing values."""
     def wrapper(val1, val2):
 
-        if val1 is None or val2 is None:
-            return np.nan
+        if val1 is None and val2 is None:
+            return 1
+        elif val1 is None or val2 is None:
+            return 0
         if type(val1) is list or type(val2) is list:
-            if len(val1) == 0 or len(val2) == 0:
-                return np.nan
+            if len(val1) == 0 and len(val2) == 0:
+                return 1
+            elif len(val1) == 0 or len(val2) == 0:
+                return 0
 
         return fn(val1, val2)
 
@@ -68,7 +102,7 @@ def evaluate_identifiers(ids1: str, ids2: str) -> float:
         score = len(set.intersection(ids1, ids2)) / len(set.union(ids1, ids2))
         return score ** .05 if score > 0 else 0
     else:
-        return np.nan
+        return 0
 
 
 @handling_missing_values
@@ -101,13 +135,13 @@ def evaluate_sysnums(ids1: str, ids2: str) -> float:
     prefixes_ids2 = set([get_prefix(recid) for recid in ids2 if get_prefix(recid) is not None])
     if len(set.intersection(prefixes_ids1, prefixes_ids2)) == 0:
         # No common prefix: difference means nothing
-        return np.nan
+        return 0
 
     elif len(set.union(ids1, ids2)) > 0:
         score = len(set.intersection(ids1, ids2)) / len(set.union(ids1, ids2))
         return score ** .05 if score > 0 else 0
     else:
-        return np.nan
+        return 0
 
 
 @handling_missing_values
@@ -140,7 +174,7 @@ def evaluate_is_analytical(format1: str, format2: str) -> float:
     elif format1[1] == 'a' or format2[1] == 'a':
         return 0.5
     else:
-        return np.nan
+        return 0
 
 
 def evaluate_is_series(format1: str, format2: str) -> Optional[float]:
@@ -158,7 +192,7 @@ def evaluate_is_series(format1: str, format2: str) -> Optional[float]:
     elif format1[1] == 's' or format2[1] == 's':
         return 0.5
     else:
-        return np.nan
+        return 0
 
 
 @handling_missing_values
@@ -473,6 +507,35 @@ def evaluate_parents(parent1: Dict, parent2: Dict) -> float:
 
 
 @handling_missing_values
+def evaluate_editions(texts1: List[str], texts2: List[str]) -> float:
+    """evaluate_editions(texts1: List[str], texts2: List[str]) -> float
+    Return the result of the evaluation of similarity of two editions. If numbers are available,
+    these are preferred to texts
+
+    :param texts1: list of editions to compare
+    :param texts2: list of editions to compare
+
+    :return: similarity score between two editions as float
+    """
+    score_txt = evaluate_lists_texts(texts1, texts2)
+
+    nb_list_1 = []
+    nb_list_2 = []
+    for txt in texts1:
+        nb_list_1 += [int(f) for f in re.findall(r'\d+', convert_to_numeric(txt))]
+    for txt in texts2:
+        nb_list_2 += [int(f) for f in re.findall(r'\d+', convert_to_numeric(txt))]
+
+    nb_list_1 = set(nb_list_1)
+    nb_list_2 = set(nb_list_2)
+    if len(nb_list_1) > 0 and len(nb_list_2) > 0:
+        score_nb = len(set.intersection(nb_list_1, nb_list_2)) / max(len(nb_list_1), len(nb_list_2))
+        return (score_txt + score_nb * 9) / 10
+    else:
+        return score_txt
+
+
+@handling_missing_values
 def evaluate_completeness(bib1: Dict[str, Any], bib2: Dict[str, Any]) -> float:
     """evaluate_completeness(bib1: Dict[str, Any], bib2: Dict[str, Any]) -> float
 
@@ -506,7 +569,7 @@ def evaluate_similarity(bib1: Dict[str, Any], bib2: Dict[str, Any]) -> Dict[str,
         'format': evaluate_format(bib1['format'], bib2['format']),
         'title': evaluate_texts(bib1['title'], bib2['title']),
         'short_title': evaluate_texts(bib1['short_title'], bib2['short_title']),
-        'editions': evaluate_lists_texts(bib1['editions'], bib2['editions']),
+        'editions': evaluate_editions(bib1['editions'], bib2['editions']),
         'creators': evaluate_lists_names(bib1['creators'], bib2['creators']),
         'corp_creators': evaluate_lists_names(bib1['corp_creators'], bib2['corp_creators']),
         'language': evaluate_language(bib1['language'], bib2['language']),
@@ -579,4 +642,5 @@ def get_similarity_score(bib1: Dict[str, Any],
         # 0.5 is the threshold to determine if two records are similar or not
         return clf.predict_proba(df)[0][1]
     else:
-        return np.mean([results[k] for k in results if pd.isna(results[k]) is False])
+        return np.mean([results[k] for k in results if pd.isna(results[k]) is False and k not in ['are_analytical',
+                                                                                                  'are_series']])
