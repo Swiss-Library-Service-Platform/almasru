@@ -1,2 +1,2 @@
-__version__ = '2.2.4'
-commit_message = f'Dedup: update title evaluation'
+__version__ = '2.2.5'
+commit_message = f'Dedup: minor fix'
