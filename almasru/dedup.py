@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import unicodedata
 import re
-from Levenshtein import distance
+from Levenshtein import distance, ratio
 import itertools
 from sklearn.neural_network import MLPClassifier
 from copy import deepcopy
@@ -377,18 +377,43 @@ def evaluate_texts(text1: str, text2: str) -> float:
     """
     if len(text1) < len(text2):
         text1, text2 = (text2, text1)
-    coef = len(text1) - len(text2) + 1
+    # coef = len(text1) - len(text2) + 1
     text1_ascii = get_ascii(text1)
     text2_ascii = get_ascii(text2)
 
-    score = distance(text1, text2, weights=(1, 0, 1)) * coef
-    score += distance(text1, text2, weights=(0, 1, 0))
-    score += distance(text1_ascii, text2_ascii, weights=(1, 0, 1)) * coef * 4
-    score += distance(text1_ascii, text2_ascii, weights=(0, 1, 0)) * 4
+    # score = distance(text1, text2, weights=(1, 0, 1)) * coef
+    # score += distance(text1, text2, weights=(0, 1, 0))
+    # score += distance(text1_ascii, text2_ascii, weights=(1, 0, 1)) * coef * 4
+    # score += distance(text1_ascii, text2_ascii, weights=(0, 1, 0)) * 4
 
-    sum_max = (coef * len(text2) + coef - 1) * 5
+    t_list1 = re.findall(r'\b\w+\b', text1)
+    t_list2 = re.findall(r'\b\w+\b', text2)
+    if len(t_list1) < len(t_list2):
+        t_list1, t_list2 = (t_list2, t_list1)
 
-    return 1 - score / sum_max
+    diff = len(t_list1) - len(t_list2)
+    coef = 1 / diff**0.05 - 0.15 if diff > 0 else 1
+
+    score_raw = 0
+    for pos in range(len(t_list1) - len(t_list2) + 1):
+        temp_score = np.mean([ratio(t_list1[i + pos], t_list2[i]) for i in range(len(t_list2))])
+        print(temp_score, t_list1[pos:pos + len(t_list2)], t_list2)
+        if temp_score > score_raw:
+            score_raw = temp_score
+
+    score_ascii = 0
+    for pos in range(len(t_list1) - len(t_list2) + 1):
+        temp_score = np.mean([ratio(get_ascii(t_list1[i + pos]), get_ascii(t_list2[i])) for i in range(len(t_list2))])
+        print(temp_score, t_list1[pos:pos + len(t_list2)], t_list2)
+        if temp_score > score_ascii:
+            score_ascii = temp_score
+
+    return (score_raw + score_ascii * 4) / 5 * coef
+
+
+    # sum_max = (coef * len(text2) + coef - 1) * 5
+    #
+    # return 1 - score / sum_max
 
 
 @handling_missing_values
