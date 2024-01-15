@@ -1,2 +1,2 @@
-__version__ = '2.2.5'
-commit_message = f'Dedup: minor fix'
+__version__ = '2.2.6'
+commit_message = f'Update find IZ inventory'

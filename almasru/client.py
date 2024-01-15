@@ -1125,7 +1125,14 @@ class IzSruRecord(SruRecord):
                     f[field] = subfield.text
             inventory_info.append(f)
 
-        logging.info(f'{repr(self)}: {len(inventory_info)} holdings in IZ found')
+        if len(inventory_info) == 0 and self.nz_sru_client is not None:
+            nz_bib = SruRecord(self.get_nz_mms_id(), base_url=self.nz_sru_client.base_url)
+            _ = nz_bib.data
+            if nz_bib.error is False:
+                inventory_info = [{'iz': inventory['IZ']} for inventory in nz_bib.get_inventory_info()
+                                  if inventory['MMS ID'] == self.mms_id]
+
+        logging.info(f'{repr(self)}: inventory in IZ found ({len(inventory_info)})')
         return inventory_info
 
     @check_error
