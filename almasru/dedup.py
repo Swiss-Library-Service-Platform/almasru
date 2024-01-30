@@ -387,6 +387,10 @@ def evaluate_texts(text1: str, text2: str) -> float:
     coef = 1 / diff**0.05 - 0.15 if diff > 0 else 1
 
     score_raw = 0
+    # Idea is to compare the two texts word by word and take the best score.
+    # If text 1 has 3 words and text 2 has 2 words: t1_w1 <=> t2_w1 / t1_w2 <=> t2_w2
+    # Second test: t1_w2 <=> t2_w1 / t1_w3 <=> t2_w2
+    # We use the max result between test 1 and 2
     for pos in range(len(t_list1) - len(t_list2) + 1):
         temp_score = np.mean([ratio(t_list1[i + pos], t_list2[i]) for i in range(len(t_list2))])
         if temp_score > score_raw:
@@ -637,8 +641,8 @@ def get_similarity_score(bib1: Dict[str, Any],
                    'isbns',
                    'issns',
                    'other_std_num',
-                   'parent',
                    'sysnums',
+                   'parent',
                    'same_fields_existing',
                    'are_analytical',
                    'are_series']

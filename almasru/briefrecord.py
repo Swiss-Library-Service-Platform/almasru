@@ -370,8 +370,10 @@ class BriefRecFactory:
         :return: format of the record
         """
         f33x_summary = BriefRecFactory.get_33x_summary(bib)
+        is_online = BriefRecFactory.check_is_online(bib)
+        is_online_txt = 'p' if is_online is False else 'e'
 
-        return BriefRecFactory.get_leader_pos67(bib) + ' / ' + f33x_summary
+        return BriefRecFactory.get_leader_pos67(bib) + ' / ' + f33x_summary + ' / ' + is_online_txt
         # if BriefRecFactory.get_leader_pos67(bib) == 'am':
         #     return f'book {f33x_summary}'
         #
@@ -565,6 +567,24 @@ class BriefRecFactory:
             return parent_information
         else:
             return None
+
+    @staticmethod
+    def check_is_online(bib:etree.Element):
+        """check_is_online(bib:etree.Element)
+        Check if the record is an online record.
+
+        Use field 008 and leader. Position 23 indicate if a record is online or not (values "o",
+         "q", "s"). For visual material and maps it's 29 position.
+
+        :param bib: :class:`etree.Element`
+
+        :return: boolean indicating whether the record is online
+        """
+        leader6 = BriefRecFactory.get_leader_pos67(bib)[0]
+        f008 = bib.find('.//controlfield[@tag="008"]').text
+        format_pos = 29 if leader6 in ['e', 'g', 'k', 'o', 'r'] else 23
+        return f008[format_pos] in ['o', 'q', 's']
+
 
     @staticmethod
     def get_bib_info(bib: etree.Element):

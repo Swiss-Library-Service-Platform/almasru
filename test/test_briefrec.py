@@ -1,5 +1,5 @@
 from almasru.client import SruClient, SruRecord, SruRequest
-from almasru.briefrecord import BriefRec
+from almasru.briefrecord import BriefRec, BriefRecFactory
 from almasru import config_log
 import unittest
 import shutil
@@ -41,13 +41,31 @@ class TestSruClient(unittest.TestCase):
         mms_id = '991171637529805501'
         rec = SruRecord(mms_id)
         brief_rec = BriefRec(rec)
-        self.assertEqual(brief_rec.data['format'], 'aa / txt;n;nc', 'Format should be "aa / txt;n;nc"')
+        self.assertEqual(brief_rec.data['format'], 'aa / txt;n;nc / p', 'Format should be "aa / txt;n;nc"')
 
     def test_get_language(self):
         mms_id = '991171637529805501'
         rec = SruRecord(mms_id)
         brief_rec = BriefRec(rec)
         self.assertEqual(brief_rec.data['language'], 'ger', 'Language should be "ger"')
+
+    def test_check_is_online_1(self):
+        mms_id = '991171637529805501'
+        rec = SruRecord(mms_id)
+        brief_rec = BriefRec(rec)
+        self.assertEqual(brief_rec.data['format'].split('/')[-1].strip(), 'p', 'Format should be "p"')
+
+    def test_check_is_online_2(self):
+        mms_id = '991171016126905501'
+        rec = SruRecord(mms_id)
+        brief_rec = BriefRec(rec)
+        self.assertEqual(brief_rec.data['format'].split('/')[-1].strip(), 'e', 'Format should be "e"')
+
+    def test_check_is_online_3(self):
+        mms_id = '991171022315005501'
+        rec = SruRecord(mms_id)
+        brief_rec = BriefRec(rec)
+        self.assertEqual(brief_rec.data['format'].split('/')[-1].strip(), 'e', 'Format should be "e"')
 
 
 if __name__ == '__main__':

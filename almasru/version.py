@@ -1,2 +1,2 @@
-__version__ = '2.2.6'
-commit_message = f'Update find IZ inventory'
+__version__ = '2.2.7'
+commit_message = f'Check is online for electronic resources'

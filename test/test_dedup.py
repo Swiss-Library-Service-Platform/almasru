@@ -235,13 +235,13 @@ class TestDedup(unittest.TestCase):
         mms_id2 = '991159842549705501'
         rec2 = SruRecord(mms_id2)
         brief_rec2 = BriefRec(rec2)
-        with open('classifiers/clf_MLPClassifier_mono2.pickle', 'rb') as f:
+        with open('classifiers/clf_MLPClassifier_v3.pickle', 'rb') as f:
             clf = pickle.load(f)
 
         result = dedup.get_similarity_score(brief_rec.data, brief_rec2.data, clf)
 
         self.assertGreater(result,
-                           0.99,
+                           0.98,
                            f'Result should near to 1.0 when comparing same records, returned {result}')
 
         mms_id = '991159842549705501'
