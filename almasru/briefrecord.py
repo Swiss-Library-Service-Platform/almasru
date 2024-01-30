@@ -583,6 +583,10 @@ class BriefRecFactory:
         leader6 = BriefRecFactory.get_leader_pos67(bib)[0]
         f008 = bib.find('.//controlfield[@tag="008"]').text
         format_pos = 29 if leader6 in ['e', 'g', 'k', 'o', 'r'] else 23
+        f338b = bib.find('.//datafield[@tag="338"]/subfield[@code="b"]')
+        if f338b is not None and f338b.text == 'cr':
+            return True
+
         return f008[format_pos] in ['o', 'q', 's']
 
 
