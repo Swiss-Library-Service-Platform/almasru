@@ -1125,7 +1125,9 @@ class IzSruRecord(SruRecord):
                     f[field] = subfield.text
             inventory_info.append(f)
 
-        if len(inventory_info) == 0 and self.nz_sru_client is not None:
+        # Only available items are displayed in AVA fields. For this reason, we need to check if there are
+        # inventory from the NZ SRU request.
+        if len(inventory_info) == 0 and self.nz_sru_client is not None and self.get_nz_mms_id() is not None:
             nz_bib = SruRecord(self.get_nz_mms_id(), base_url=self.nz_sru_client.base_url)
             _ = nz_bib.data
             if nz_bib.error is False:
