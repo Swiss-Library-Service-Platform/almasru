@@ -87,8 +87,8 @@ def evaluate_year(year1: int, year2: int) -> float:
 
 
 @handling_missing_values
-def evaluate_identifiers(ids1: str, ids2: str) -> float:
-    """evaluate_identifiers(ids1: str, ids2: str) -> float
+def evaluate_identifiers(ids1: List[str], ids2: List[str]) -> float:
+    """evaluate_identifiers(ids1: List[str], ids2: List[str]) -> float
     Return the result of the evaluation of similarity of two lists of identifiers.
 
     :param ids1: list of identifiers to compare
@@ -98,6 +98,46 @@ def evaluate_identifiers(ids1: str, ids2: str) -> float:
     """
     ids1 = set(ids1)
     ids2 = set(ids2)
+    if len(set.union(ids1, ids2)) > 0:
+        score = len(set.intersection(ids1, ids2)) / len(set.union(ids1, ids2))
+        return score ** .05 if score > 0 else 0
+    else:
+        return 0
+
+
+@handling_missing_values
+def evaluate_isbns(ids1: List[str], ids2: List[str]) -> float:
+    """evaluate_isbns(ids1: List[str], ids2: List[str]) -> float
+    Return the result of the evaluation of similarity of two lists of identifiers.
+
+    :param ids1: list of isbns to compare
+    :param ids2: list of isbns to compare
+
+    :return: similarity score between two lists of identifiers as float
+    """
+    def normalize_isbns(isbns: list[str]) -> List[str]:
+        """Return a normalized list of ISBNs
+
+        Idea is to transform all ISBNs in a 13 digit verstion. To avoid caluculating
+        the last control, it is removed. All ISBN have 12 digits. Incorrect isbns with
+        other lengths are kept as they are.
+
+        :param isbns: list of ISBN to complete with variants
+
+        :return: normalized version of the ISBN
+        """
+        new_isbns = []
+        for isbn in isbns:
+            if len(isbn) == 13:
+                new_isbns.append(isbn[:12])
+            if len(isbn) == 10:
+                new_isbns.append('978' + isbn[:9])
+            else:
+                new_isbns.append(isbn)
+        return new_isbns
+
+    ids1 = set(normalize_isbns(ids1))
+    ids2 = set(normalize_isbns(ids2))
     if len(set.union(ids1, ids2)) > 0:
         score = len(set.intersection(ids1, ids2)) / len(set.union(ids1, ids2))
         return score ** .05 if score > 0 else 0
@@ -592,7 +632,7 @@ def evaluate_similarity(bib1: Dict[str, Any], bib2: Dict[str, Any]) -> Dict[str,
         'publishers': evaluate_lists_texts(bib1['publishers'], bib2['publishers']),
         'series': evaluate_lists_texts(bib1['series'], bib2['series']),
         'extent': evaluate_extent(bib1['extent'], bib2['extent']),
-        'isbns': evaluate_identifiers(bib1['isbns'], bib2['isbns']),
+        'isbns': evaluate_isbns(bib1['isbns'], bib2['isbns']),
         'issns': evaluate_identifiers(bib1['issns'], bib2['issns']),
         'other_std_num': evaluate_identifiers(bib1['other_std_num'], bib2['other_std_num']),
         'parent': evaluate_parents(bib1['parent'], bib2['parent']),

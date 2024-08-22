@@ -194,6 +194,12 @@ class TestDedup(unittest.TestCase):
                          '1 édition',
                          'Should be: "Première edition" => "1 édition"')
 
+    def test_evaluate_isbns(self):
+        isbns_1 = ['9783866480001']
+        isbns_2 = ['3866480001']
+        score = dedup.evaluate_isbns(isbns_1, isbns_2)
+        self.assertGreater(score, 0.9, 'Score should greater 0.9 for variants of same ISBNs')
+
     def test_evaluate_similarity(self):
         mms_id = '991159842549705501'
         rec = SruRecord(mms_id)
