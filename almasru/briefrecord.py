@@ -5,6 +5,7 @@ import re
 import json
 from .utils import roman_to_int, remove_ns
 from .client import SruRecord
+import unicodedata
 
 
 class BriefRec:
@@ -87,6 +88,7 @@ class BriefRecFactory:
 
         :return: string with normalized title
         """
+        title = unicodedata.normalize('NFC', title_field)
         title = title.upper().replace('<<', '').replace('>>', '')
         title = re.sub(r'\W', ' ', title)
         title = re.sub(r'\s+', ' ', title).strip()

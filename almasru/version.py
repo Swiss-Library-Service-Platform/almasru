@@ -1,2 +1,2 @@
-__version__ = '2.2.11'
-commit_message = f'check also variants of ISBNs (10 and 13 digits)'
+__version__ = '2.2.12'
+commit_message = f'Add normalization to composed utf-8 to title analysis'
