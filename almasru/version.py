@@ -1,2 +1,2 @@
-__version__ = '2.2.12'
-commit_message = f'Add normalization to composed utf-8 to title analysis'
+__version__ = '2.2.13'
+commit_message = f'Fix minor bug'

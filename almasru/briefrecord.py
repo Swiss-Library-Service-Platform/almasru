@@ -88,7 +88,7 @@ class BriefRecFactory:
 
         :return: string with normalized title
         """
-        title = unicodedata.normalize('NFC', title_field)
+        title = unicodedata.normalize('NFC', title)
         title = title.upper().replace('<<', '').replace('>>', '')
         title = re.sub(r'\W', ' ', title)
         title = re.sub(r'\s+', ' ', title).strip()
