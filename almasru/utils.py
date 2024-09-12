@@ -189,15 +189,18 @@ def check_removable_records(mms_ids: List[str], filepath: Optional[str] = None) 
     return df
 
 
-def roman_to_int(roman_number: str) -> int:
-    """Transform roman number to integer
+def roman_to_int(roman_number: str) -> Optional[int]:
+    """roman_to_int(roman_number: str) -> Optional[int]
+    Transform roman number to integer
+
     :param roman_number: roman number
-    :return: int value of the number
+    :return: int value of the number or None if the number is not valid
     """
     roman = {'I': 1, 'V': 5, 'X': 10, 'L': 50, 'C': 100, 'D': 500, 'M': 1000, 'IV': 4, 'IX': 9, 'XL': 40, 'XC': 90,
              'CD': 400, 'CM': 900}
     i = 0
     num = 0
+    max_val = 1000
 
     # Only capitals
     roman_number = roman_number.upper()
@@ -205,11 +208,19 @@ def roman_to_int(roman_number: str) -> int:
     while i < len(roman_number):
         # Check if a digramme like IV is in the number
         if i + 1 < len(roman_number) and roman_number[i:i + 2] in roman:
-            num += roman[roman_number[i:i + 2]]
+            new_val = roman[roman_number[i:i + 2]]
+            if new_val > max_val:
+                return None
+            num += new_val
             i += 2
+            max_val = roman[roman_number[i+1]]
 
         elif roman_number[i] in roman:
-            num += roman[roman_number[i]]
+            new_val = roman[roman_number[i]]
+            if new_val > max_val:
+                return None
+            max_val = new_val
+            num += new_val
             i += 1
 
     return num
