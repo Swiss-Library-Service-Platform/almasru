@@ -212,8 +212,8 @@ def roman_to_int(roman_number: str) -> Optional[int]:
             if new_val > max_val:
                 return None
             num += new_val
+            max_val = roman[roman_number[i + 1]]
             i += 2
-            max_val = roman[roman_number[i+1]]
 
         elif roman_number[i] in roman:
             new_val = roman[roman_number[i]]
