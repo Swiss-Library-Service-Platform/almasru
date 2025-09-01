@@ -429,6 +429,18 @@ class SruRecord:
 
         return other_sys_ids
 
+    
+    @check_error
+    def get_title(self) -> str:
+        """get_title(self) -> str
+        Fetch main Title of the current record
+
+        Fetch the content of 245$$a
+
+        :return: main title
+        """
+        return self.data.findtext('./m:datafield[@tag="245"]/m:subfield[@code="a"]', namespaces=SruClient.nsmap)
+    
     @check_error
     def get_issn(self) -> Set[str]:
         """get_issn(self) -> Set[str]
